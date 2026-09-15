@@ -1,1 +1,15 @@
-# projeto-plp-defer-li2
+# Extensão da Linguagem Imperativa 2 com o comando “defer”
+
+**1. Contexto**
+A linguagem Go popularizou o comando `defer`, um mecanismo elegante de controle de fluxo que agenda a execução de uma instrução ou chamada para o momento exato em que o bloco ou escopo atual é encerrado. Esse comando segue a ordem LIFO (*Last-In, First-Out*), permitindo garantir a liberação de recursos, a limpeza de estado ou a execução de rotinas de encerramento de forma declarativa e próxima ao ponto de inicialização. A proposta deste projeto é estender a Linguagem Imperativa 2 com a inclusão sintática e a semântica operacional do `defer`, integrando a gestão de comandos adiados ao ciclo de vida e encerramento de blocos e procedimentos da LI2.
+
+**2. Objetivos**
+O objetivo geral deste trabalho é implementar o comando `defer` na Linguagem Imperativa 2 (LI2), modificando o parser, a verificação estática de tipos e o ambiente de execução da linguagem para suportar o encadeamento de comandos adiados com ordem de execução LIFO ao término de cada escopo.
+Para atingir este objetivo, o projeto desdobra-se em metas específicas que cobrem todas as etapas do interpretador. Inicialmente, a gramática em Formato BNF da LI2 será estendida para incluir a nova construção `defer comando;`, adaptando a análise léxica, sintática e a construção dos nós na Árvore de Sintaxe Abstrata (AST). Em seguida, a verificação de tipos estática (`checaTipo`) será atualizada para validar se a instrução encapsulada pelo `defer` é bem-tipada dentro do contexto de compilação corrente.
+No âmbito da execução, o ambiente da linguagem (`AmbienteExecucaoImperativa2`) passará a contar com uma pilha de comandos adiados associada ao escopo ativo. A semântica dinâmica de execução de blocos (como em `ComandoDeclaracao`) será alterada para assegurar que, antes da restauração do ambiente (`ambiente.restaura()`), todos os comandos registrados no escopo vigente sejam desempilhados e executados em ordem LIFO. O mesmo comportamento será validado e estendido para a saída de procedimentos (`ChamadaProcedimento`). Por fim, a validação da implementação será realizada por meio de uma suíte de testes unitários e de integração cobrindo escopos aninhados, redefinição de variáveis e chamadas em procedimentos.  
+
+**3. Escopo**
+
+**3.1. Escopo Incluído**
+O escopo do projeto contempla a criação do nó AST `ComandoDefer` implementando a interface `Comando`, permitindo construções como `defer write("fim");`. No interpretador, as classes de suporte da LI2 serão adaptadas para que o `AmbienteExecucaoImperativa2` consiga gerenciar os comandos adiados organizados por nível de escopo.  
+Quanto à semântica de escopo, garante-se a política LIFO, onde múltiplos comandos `defer` no mesmo bloco são executados na ordem inversa de sua declaração. A classe responsável pelo bloco (`ComandoDeclaracao`) processará todos os `defers` pendentes antes da desalocação do escopo. Em blocos aninhados, garante-se o isolamento adequado para que instruções agendadas em um bloco interno sejam finalizadas no término daquele escopo específico, sem vazar para o escopo externo. A utilização de `defer` dentro de procedimentos executados via `ChamadaProcedimento` também será coberta, e programas de teste validarão a consistência do estado e a ordem de saída de dados.
