@@ -1,15 +1,98 @@
-# Extensão da Linguagem Imperativa 2 com o comando “defer”
+# Proposta de Projeto: Extensão da Linguagem Funcional 2 (LF2) com Operadores de Pipeline e Composição de Funções
 
-**1. Contexto**
-A linguagem Go popularizou o comando `defer`, um mecanismo elegante de controle de fluxo que agenda a execução de uma instrução ou chamada para o momento exato em que o bloco ou escopo atual é encerrado. Esse comando segue a ordem LIFO (*Last-In, First-Out*), permitindo garantir a liberação de recursos, a limpeza de estado ou a execução de rotinas de encerramento de forma declarativa e próxima ao ponto de inicialização. A proposta deste projeto é estender a Linguagem Imperativa 2 com a inclusão sintática e a semântica operacional do `defer`, integrando a gestão de comandos adiados ao ciclo de vida e encerramento de blocos e procedimentos da LI2.
+## 1. Contexto
 
-**2. Objetivos**
-O objetivo geral deste trabalho é implementar o comando `defer` na Linguagem Imperativa 2 (LI2), modificando o parser, a verificação estática de tipos e o ambiente de execução da linguagem para suportar o encadeamento de comandos adiados com ordem de execução LIFO ao término de cada escopo.
-Para atingir este objetivo, o projeto desdobra-se em metas específicas que cobrem todas as etapas do interpretador. Inicialmente, a gramática em Formato BNF da LI2 será estendida para incluir a nova construção `defer comando;`, adaptando a análise léxica, sintática e a construção dos nós na Árvore de Sintaxe Abstrata (AST). Em seguida, a verificação de tipos estática (`checaTipo`) será atualizada para validar se a instrução encapsulada pelo `defer` é bem-tipada dentro do contexto de compilação corrente.
-No âmbito da execução, o ambiente da linguagem (`AmbienteExecucaoImperativa2`) passará a contar com uma pilha de comandos adiados associada ao escopo ativo. A semântica dinâmica de execução de blocos (como em `ComandoDeclaracao`) será alterada para assegurar que, antes da restauração do ambiente (`ambiente.restaura()`), todos os comandos registrados no escopo vigente sejam desempilhados e executados em ordem LIFO. O mesmo comportamento será validado e estendido para a saída de procedimentos (`ChamadaProcedimento`). Por fim, a validação da implementação será realizada por meio de uma suíte de testes unitários e de integração cobrindo escopos aninhados, redefinição de variáveis e chamadas em procedimentos.  
+A Linguagem Funcional 2 (LF2), utilizada como linguagem de estudo na disciplina de Paradigmas de Linguagens de Programação (PLP), disponibiliza suporte a funções como valores de primeira classe e funções de alta ordem. Contudo, a avaliação de chamadas de funções encadeadas na LF2 exige o aninhamento sucessivo de parênteses (por exemplo, `g(f(h(x)))`), o que prejudica a legibilidade e contrapõe o fluxo natural de transformação de dados.
 
-**3. Escopo**
+Para resolver essa limitação, este projeto propõe a extensão da LF2 por meio da incorporação nativa de dois operadores funcionais: o operador de *forward pipeline* (`|>`) e o operador de composição de funções (`>>`). A inclusão dessas primitivas reduz o aninhamento sintático e alinha a LF2 às convenções de linguagens funcionais modernas (como Elixir, F# e OCaml), estabelecendo um fluxo de processamento explícito da esquerda para a direita (*left-to-right data flow*).
 
-**3.1. Escopo Incluído**
-O escopo do projeto contempla a criação do nó AST `ComandoDefer` implementando a interface `Comando`, permitindo construções como `defer write("fim");`. No interpretador, as classes de suporte da LI2 serão adaptadas para que o `AmbienteExecucaoImperativa2` consiga gerenciar os comandos adiados organizados por nível de escopo.  
-Quanto à semântica de escopo, garante-se a política LIFO, onde múltiplos comandos `defer` no mesmo bloco são executados na ordem inversa de sua declaração. A classe responsável pelo bloco (`ComandoDeclaracao`) processará todos os `defers` pendentes antes da desalocação do escopo. Em blocos aninhados, garante-se o isolamento adequado para que instruções agendadas em um bloco interno sejam finalizadas no término daquele escopo específico, sem vazar para o escopo externo. A utilização de `defer` dentro de procedimentos executados via `ChamadaProcedimento` também será coberta, e programas de teste validarão a consistência do estado e a ordem de saída de dados.
+## 2. Objetivos
+
+### Objetivo Geral
+
+O objetivo geral deste projeto é estender o compilador/interpretador da Linguagem Funcional 2 (LF2) — contemplando sua gramática, árvore de sintaxe abstrata (AST), sistema de verificação estática de tipos e semântica operacional —, de modo a prover suporte aos operadores de *pipeline* (`|>`) e composição funcional (`>>`).
+
+### Objetivos Específicos
+
+- Atualizar a especificação sintática formal em BNF da LF2, definindo a precedência gramatical e a associatividade à esquerda para os operadores `|>` e `>>`.
+- Expandir a AST e a etapa de *parsing* da linguagem para representar adequadamente as novas construções sintáticas.
+- Implementar regras formais de inferência e checagem estática de tipos para ambos os operadores no módulo de verificação de tipos (`checaTipo` / `getTipo`), garantindo o tratamento de exceções de incompatibilidade de tipos.
+- Implementar a execução dos operadores no interpretador (`avaliar`), reescrevendo internamente `x |> f` como a chamada tradicional `f(x)` e `f >> g` como a criação de uma nova função `fn x => g(f(x))` (desaçucaramento sintático), reaproveitando a estrutura de execução já existente na LF2.
+- Construir uma suíte de testes unitários e de integração cobrindo casos válidos de encadeamento com tipos primitivos e funções de alta ordem, além de cenários de erro de tipagem.
+
+## 3. Escopo
+
+### Incluído
+
+- **Modificações Gramaticais e Parsing:** Suporte aos símbolos `|>` e `>>` na análise léxica e sintática.
+- **Associatividade e Precedência:** Definição de associatividade à esquerda para ambos os operadores. A hierarquia de precedência garantirá que a composição de funções (`>>`) tenha maior precedência que o *pipeline* (`|>`), permitindo a interpretação direta da expressão `x |> f >> g` como `x |> (f >> g)`.
+- **Verificação Estática de Tipos:**
+    - Para `e1 |> e2`: Validação de que `e1` possui tipo $T_1$ e `e2` possui tipo $T_1 \rightarrow T_2$, resultando no tipo $T_2$.
+    - Para `e1 >> e2`: Validação de que `e1` possui tipo $T_1 \rightarrow T_2$ e `e2` possui tipo $T_2 \rightarrow T_3$, resultando no tipo $T_1 \rightarrow T_3$.
+    - Lançamento de exceção de tipagem (`TiposIncompativeisException`) ao detectar inconsistência entre os tipos de entrada e saída.
+- **Semântica Operacional de Avaliação:**
+    - Avaliação do operador `|>` via aplicação do valor resultante de `e1` à função `e2`.
+    - Avaliação do operador `>>` gerando uma nova estrutura de `ValorFuncao` que representa $\lambda x . e_2(e_1(x))$, mantendo o ambiente de execução (*closure*) preservado.
+- **Infraestrutura de Testes:** Bateria de testes automatizados para validação do pipeline de execução.
+
+### Não Incluído
+
+- Suporte a *placeholders* para aplicação parcial em funções com múltiplos argumentos (e.g., `x |> f(a, _, b)`).
+- Avaliação preguiçosa (*lazy evaluation*).
+- Adição de novos tipos de dados estruturados não previstos na LF2 original (como tuplas, registros ou monadas).
+- Operadores de direção oposta, como *backward pipeline* (`<|`) ou composição reversa (`<<`).
+
+## 4. Especificação Sintática (BNF)
+
+A gramática formal da LF2 é estendida com os novos níveis de precedência. A estrutura abaixo reflete a hierarquia onde a aplicação tradicional de função e os operadores aritméticos/lógicos mantêm alta precedência, seguidos pelo operador de composição (`>>`) e, por fim, pelo operador de *pipeline* (`|>`), ambos associativos à esquerda.
+
+# BNF
+
+```
+(* Regra raiz da linguagem *)
+<Expressao>         ::= <ExpPipeline>
+
+(* Operador de Pipeline (|>) - Menor precedência, associativo à esquerda *)
+<ExpPipeline>       ::= <ExpPipeline> "|>" <ExpComposicao>
+                      | <ExpComposicao>
+
+(* Operador de Composição (>>) - Precedência intermediária, associativo à esquerda *)
+<ExpComposicao>     ::= <ExpComposicao> ">>" <ExpLogicaDisjuncao>
+                      | <ExpLogicaDisjuncao>
+
+(* Expressões Lógicas, Relacionais e Aritméticas (LF2 Padrão) *)
+<ExpLogicaDisjuncao>::= <ExpLogicaDisjuncao> "or" <ExpLogicaConjuncao>
+                      | <ExpLogicaConjuncao>
+
+<ExpLogicaConjuncao>::= <ExpLogicaConjuncao> "and" <ExpRelacional>
+                      | <ExpRelacional>
+
+<ExpRelacional>     ::= <ExpAditiva> "==" <ExpAditiva>
+                      | <ExpAditiva> "<=" <ExpAditiva>
+                      | <ExpAditiva>
+
+<ExpAditiva>        ::= <ExpAditiva> "+" <ExpMultiplicativa>
+                      | <ExpAditiva> "-" <ExpMultiplicativa>
+                      | <ExpMultiplicativa>
+
+<ExpMultiplicativa> ::= <ExpMultiplicativa> "*" <ExpAplicacao>
+                      | <ExpMultiplicativa> "/" <ExpAplicacao>
+                      | <ExpAplicacao>
+
+(* Aplicação de Função e Termos Primários - Maior precedência *)
+<ExpAplicacao>      ::= <ExpPrimaria> "(" <Expressao> ")"
+                      | <ExpPrimaria>
+
+<ExpPrimaria>       ::= <Id>
+                      | <ValorPrimitivo>
+                      | <ExpFuncao>
+                      | "(" <Expressao> ")"
+
+(* Definição de Abstração Funcional (LF2 Padrão) *)
+<ExpFuncao>         ::= "fn" <Id> "=>" <Expressao>
+```
+
+### Propriedades da Gramática:
+
+1. **Associatividade à Esquerda:** A recursão à esquerda nas regras `<ExpPipeline>` e `<ExpComposicao>` garante que expressões como `x |> f |> g` e `f >> g >> h` sejam agrupadas naturalmente como `((x |> f) |> g)` e `((f >> g) >> h)`, respectivamente.
+2. **Precedência Relativa:** Como `<ExpPipeline>` deriva `<ExpComposicao>`, a composição `f >> g` é avaliada antes da aplicação via pipeline. Assim, `x |> f >> g` é interpretado sintaticamente como `x |> (f >> g)`.
