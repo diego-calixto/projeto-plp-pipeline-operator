@@ -1,0 +1,328 @@
+/*
+ * ============================================================================
+ * Projeto: Extensao da Linguagem Funcional 2 (LF2) com Operadores de
+ *          Pipeline (|>) e Composicao de Funcoes (>>)
+ *
+ * Disciplina: IN1007 - Paradigmas de Linguagens de Programacao (PLP)
+ * Centro de Informatica - CIn / UFPE
+ *
+ * ----------------------------------------------------------------------------
+ * ESPECIFICACAO SINTATICA FORMAL (BNF - Original com recursao a esquerda):
+ *
+ * <Expressao>          ::= <ExpPipeline>
+ * <ExpPipeline>        ::= <ExpPipeline> "|>" <ExpComposicao>
+ *                        | <ExpComposicao>
+ * <ExpComposicao>      ::= <ExpComposicao> ">>" <ExpLogicaDisjuncao>
+ *                        | <ExpLogicaDisjuncao>
+ * <ExpLogicaDisjuncao> ::= <ExpLogicaDisjuncao> "or" <ExpLogicaConjuncao>
+ *                        | <ExpLogicaConjuncao>
+ * <ExpLogicaConjuncao> ::= <ExpLogicaConjuncao> "and" <ExpRelacional>
+ *                        | <ExpRelacional>
+ * <ExpRelacional>      ::= <ExpAditiva> "==" <ExpAditiva>
+ *                        | <ExpAditiva> "<=" <ExpAditiva>
+ *                        | <ExpAditiva>
+ * <ExpAditiva>         ::= <ExpAditiva> "+" <ExpMultiplicativa>
+ *                        | <ExpAditiva> "-" <ExpMultiplicativa>
+ *                        | <ExpAditiva> "++" <ExpMultiplicativa>
+ *                        | <ExpMultiplicativa>
+ * <ExpMultiplicativa>  ::= <ExpMultiplicativa> "*" <ExpUnaria>
+ *                        | <ExpMultiplicativa> "/" <ExpUnaria>
+ *                        | <ExpMultiplicativa> "%" <ExpUnaria>
+ *                        | <ExpUnaria>
+ * <ExpUnaria>          ::= "-" <ExpUnaria>
+ *                        | "not" <ExpUnaria>
+ *                        | "length" <ExpUnaria>
+ *                        | <ExpAplicacao>
+ * <ExpAplicacao>       ::= <ExpPrimaria> "(" [ <Expressao> ( "," <Expressao> )* ] ")"
+ *                        | <ExpPrimaria>
+ * <ExpPrimaria>        ::= <Id>
+ *                        | <ValorPrimitivo>
+ *                        | <ExpFuncao>
+ *                        | <IfThenElse>
+ *                        | <ExpDeclaracao>
+ *                        | "(" <Expressao> ")"
+ * <ExpFuncao>          ::= "fn" <Id>+ ( "=>" | "." ) <Expressao>
+ * <ValorPrimitivo>     ::= <ValorInteiro> | <ValorBooleano> | <ValorString>
+ * <IfThenElse>         ::= "if" <Expressao> "then" <Expressao> "else" <Expressao>
+ * <ExpDeclaracao>      ::= "let" <DeclaracaoFuncional> "in" <Expressao>
+ *
+ * ----------------------------------------------------------------------------
+ * GRAMATICA EQUIVALENTE PARA JAVACC (LL(1) - Livre de recursao a esquerda):
+ *
+ * S                   -> Expressao <EOF>
+ * Expressao           -> ExpPipeline
+ * ExpPipeline         -> ExpComposicao ( "|>" ExpComposicao )*
+ * ExpComposicao       -> ExpLogicaDisjuncao ( ">>" ExpLogicaDisjuncao )*
+ * ExpLogicaDisjuncao  -> ExpLogicaConjuncao ( "or" ExpLogicaConjuncao )*
+ * ExpLogicaConjuncao  -> ExpRelacional ( "and" ExpRelacional )*
+ * ExpRelacional       -> ExpAditiva [ ( "==" | "<=" | "<" | ">=" | ">" | "!=" ) ExpAditiva ]
+ * ExpAditiva          -> ExpMultiplicativa ( ( "+" | "-" | "++" ) ExpMultiplicativa )*
+ * ExpMultiplicativa   -> ExpUnaria ( ( "*" | "/" | "%" ) ExpUnaria )*
+ * ExpUnaria           -> ( "-" | "not" | "length" ) ExpUnaria | ExpAplicacao
+ * ExpAplicacao        -> ExpPrimaria ( "(" [ Expressao ( "," Expressao )* ] ")" )*
+ * ExpPrimaria         -> ExpFuncao | ValorPrimitivo | IfThenElse | ExpDeclaracao | <ID> | "(" Expressao ")"
+ * ExpFuncao           -> "fn" ( <ID> )+ ( "=>" | "." ) Expressao
+ * ValorPrimitivo      -> <INTEGER_LITERAL> | "true" | "false" | <STRING_LITERAL>
+ * IfThenElse          -> "if" Expressao "then" Expressao "else" Expressao
+ * ExpDeclaracao       -> "let" DeclaracaoFuncional "in" Expressao
+ * DeclaracaoFuncional -> Dec ( "," Dec )*
+ * Dec                 -> DecVariavel | DecFuncao
+ * DecVariavel         -> "var" <ID> "=" Expressao
+ * DecFuncao           -> "fun" <ID> ( <ID> )* "=" Expressao
+ * ============================================================================
+ */
+
+PARSER_BEGIN(ProjetoPipeline)
+
+public class ProjetoPipeline {
+    public static void main(String[] args) {
+        try {
+            ProjetoPipeline parser;
+            if (args.length == 0) {
+                parser = new ProjetoPipeline(System.in);
+            } else {
+                parser = new ProjetoPipeline(new java.io.StringReader(args[0]));
+            }
+            parser.S();
+            System.out.println("Syntax is okay");
+        } catch (Throwable e) {
+            // Catching Throwable is ugly but JavaCC throws Error objects!
+            System.out.println("Syntax check failed: " + e.getMessage());
+        }
+    }
+}
+
+PARSER_END(ProjetoPipeline)
+
+/* ============================================================================
+ * ANALISE LEXICA: ESPACOS EM BRANCO E COMENTARIOS
+ * ============================================================================ */
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| "\f"
+}
+
+SPECIAL_TOKEN :
+{
+  < SINGLE_LINE_COMMENT : "//" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")? >
+| < MULTI_LINE_COMMENT  : "/*" (~["*"])* "*" ("*" | (~["*", "/"] (~["*"])* "*"))* "/" >
+}
+
+/* ============================================================================
+ * ANALISE LEXICA: PALAVRAS RESERVADAS (KEYWORDS)
+ * ============================================================================ */
+
+TOKEN :
+{
+  < FN     : "fn" >
+| < LET    : "let" >
+| < IN     : "in" >
+| < VAR    : "var" >
+| < FUNC   : "fun" >
+| < IF     : "if" >
+| < THEN   : "then" >
+| < ELSE   : "else" >
+| < NOT    : "not" >
+| < AND    : "and" >
+| < OR     : "or" >
+| < LENGTH : "length" >
+| < TRUE   : "true" >
+| < FALSE  : "false" >
+}
+
+/* ============================================================================
+ * ANALISE LEXICA: OPERADORES E SIMBOLOS
+ * ============================================================================ */
+
+TOKEN :
+{
+  < PIPELINE : "|>" >
+| < COMPOSE  : ">>" >
+| < ARROW    : "=>" >
+| < EQ       : "==" >
+| < LE       : "<=" >
+| < GE       : ">=" >
+| < NE       : "!=" >
+| < CONCAT   : "++" >
+| < PLUS     : "+" >
+| < MINUS    : "-" >
+| < STAR     : "*" >
+| < SLASH    : "/" >
+| < REM      : "%" >
+| < ASSIGN   : "=" >
+| < LT       : "<" >
+| < GT       : ">" >
+| < LPAREN   : "(" >
+| < RPAREN   : ")" >
+| < COMMA    : "," >
+| < DOT      : "." >
+}
+
+/* ============================================================================
+ * ANALISE LEXICA: LITERAIS PRIMITIVOS
+ * ============================================================================ */
+
+TOKEN :
+{
+  < INTEGER_LITERAL : (["0"-"9"])+ >
+| < STRING_LITERAL :
+    "\""
+    (
+      (~["\"", "\\", "\n", "\r"])
+    | ("\\" ["n", "t", "b", "r", "f", "\\", "'", "\""])
+    )*
+    "\""
+  >
+}
+
+/* ============================================================================
+ * ANALISE LEXICA: IDENTIFICADORES
+ * ============================================================================ */
+
+TOKEN :
+{
+  < IDENTIFIER : <LETTER> (<LETTER> | <DIGIT>)* >
+| < #LETTER    : ["a"-"z", "A"-"Z", "_"] >
+| < #DIGIT     : ["0"-"9"] >
+}
+
+/* ============================================================================
+ * REGRAS DE PRODUCAO SINTATICA (PARSER)
+ * ============================================================================ */
+
+// Regra inicial: uma expressao seguida pelo fim da entrada (<EOF>)
+void S() : {}
+{
+  Expressao() <EOF>
+}
+
+// Raiz de expressao
+void Expressao() : {}
+{
+  ExpPipeline()
+}
+
+// Operador de Pipeline (|>) - Menor precedencia, associativo a esquerda
+// ExpPipeline ::= ExpComposicao ( "|>" ExpComposicao )*
+void ExpPipeline() : {}
+{
+  ExpComposicao() ( LOOKAHEAD(1) <PIPELINE> ExpComposicao() )*
+}
+
+// Operador de Composicao de Funcoes (>>) - Precedencia intermediaria, associativo a esquerda
+// ExpComposicao ::= ExpLogicaDisjuncao ( ">>" ExpLogicaDisjuncao )*
+void ExpComposicao() : {}
+{
+  ExpLogicaDisjuncao() ( LOOKAHEAD(1) <COMPOSE> ExpLogicaDisjuncao() )*
+}
+
+// Operador Logico Disjuncao (or)
+void ExpLogicaDisjuncao() : {}
+{
+  ExpLogicaConjuncao() ( LOOKAHEAD(1) <OR> ExpLogicaConjuncao() )*
+}
+
+// Operador Logico Conjuncao (and)
+void ExpLogicaConjuncao() : {}
+{
+  ExpRelacional() ( LOOKAHEAD(1) <AND> ExpRelacional() )*
+}
+
+// Operadores Relacionais (==, <=, <, >=, >, !=)
+void ExpRelacional() : {}
+{
+  ExpAditiva() [ LOOKAHEAD(1) ( <EQ> | <LE> | <GE> | <NE> | <LT> | <GT> ) ExpAditiva() ]
+}
+
+// Operadores Aritmeticos Aditivos (+, -) e Concatenacao de String (++)
+void ExpAditiva() : {}
+{
+  ExpMultiplicativa() ( LOOKAHEAD(1) ( <PLUS> | <MINUS> | <CONCAT> ) ExpMultiplicativa() )*
+}
+
+// Operadores Aritmeticos Multiplicativos (*, /, %)
+void ExpMultiplicativa() : {}
+{
+  ExpUnaria() ( LOOKAHEAD(1) ( <STAR> | <SLASH> | <REM> ) ExpUnaria() )*
+}
+
+// Operadores Unarios (-, not, length)
+void ExpUnaria() : {}
+{
+  ( <MINUS> | <NOT> | <LENGTH> ) ExpUnaria()
+| ExpAplicacao()
+}
+
+// Aplicacao de Funcao: f(x), (fn x => x + 1)(10), f(x, y), curried calls f(x)(y)
+void ExpAplicacao() : {}
+{
+  ExpPrimaria() ( LOOKAHEAD(1) <LPAREN> [ Expressao() ( <COMMA> Expressao() )* ] <RPAREN> )*
+}
+
+// Termos Primarios
+void ExpPrimaria() : {}
+{
+  ExpFuncao()
+| ValorPrimitivo()
+| IfThenElse()
+| ExpDeclaracao()
+| <IDENTIFIER>
+| <LPAREN> Expressao() <RPAREN>
+}
+
+// Abstracao Funcional: fn x => expr ou fn x y => expr (tambem aceita notacao com ponto '.')
+void ExpFuncao() : {}
+{
+  <FN> ( <IDENTIFIER> )+ ( <ARROW> | <DOT> ) Expressao()
+}
+
+// Valores Primitivos (Inteiro, Booleano, String)
+void ValorPrimitivo() : {}
+{
+  <INTEGER_LITERAL>
+| <TRUE>
+| <FALSE>
+| <STRING_LITERAL>
+}
+
+// Expressao Condicional: if <Expressao> then <Expressao> else <Expressao>
+void IfThenElse() : {}
+{
+  <IF> Expressao() <THEN> Expressao() <ELSE> Expressao()
+}
+
+// Declaracoes Locais: let <Declaracoes> in <Expressao>
+void ExpDeclaracao() : {}
+{
+  <LET> DeclaracaoFuncional() <IN> Expressao()
+}
+
+// Declaracao Funcional Composta (separada por virgula)
+void DeclaracaoFuncional() : {}
+{
+  Dec() ( <COMMA> Dec() )*
+}
+
+// Declaracao Individual: Variavel ou Funcao
+void Dec() : {}
+{
+  DecVariavel()
+| DecFuncao()
+}
+
+// Declaracao de Variavel: var x = expr
+void DecVariavel() : {}
+{
+  <VAR> <IDENTIFIER> <ASSIGN> Expressao()
+}
+
+// Declaracao de Funcao: fun f x y = expr
+void DecFuncao() : {}
+{
+  <FUNC> <IDENTIFIER> ( <IDENTIFIER> )* <ASSIGN> Expressao()
+}
