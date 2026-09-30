@@ -25,6 +25,10 @@ const WORKSPACE_EXAMPLES: Record<string, WorkspaceExample> = {
     markdown: "# Funcional 2\n\nExample notebook for the second functional language.",
     code: `(let fun dec n = if (n==0) then 0 else n + dec(n-1) in dec)(5)`,
   },
+  FuncPipe: {
+    markdown: "# Funcional Pipeline\n\nExample notebook for the functional language with pipeline (|>) and composition (>>).",
+    code: `(let fun dec n = if (n==0) then 0 else n + dec(n-1) in dec)(5)`,
+  },
   Func3: {
     markdown: "# Funcional 3\n\nExample notebook for the third functional language.",
     code: `let fun positivo x = x > 0 in

@@ -75,6 +75,10 @@ export const AVAILABLE_LANGUAGES: NotebookLanguage[] = [
     keywords: ["not", "length", "and", "or", "let", "var", "in", "fun", "fn", "if", "then", "else"],
     literals: ["true", "false"],
   }),
+  defineLanguage("FuncPipe", "cell", {
+    keywords: ["not", "length", "and", "or", "let", "var", "in", "fun", "fn", "if", "then", "else"],
+    literals: ["true", "false"],
+  }),
   defineLanguage("Func3", "cell", {
     keywords: ["not", "length", "and", "or", "let", "var", "in", "fun", "fn", "if", "then", "else", "for"],
     literals: ["true", "false"],

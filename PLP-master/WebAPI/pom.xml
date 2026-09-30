@@ -35,6 +35,11 @@
       <version>${revision}</version>
     </dependency>
     <dependency>
+      <groupId>FuncionalPipeline</groupId>
+      <artifactId>FuncionalPipeline</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
       <groupId>Funcional3</groupId>
       <artifactId>Funcional3</artifactId>
       <version>${revision}</version>

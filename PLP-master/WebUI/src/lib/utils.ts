@@ -52,6 +52,7 @@ export const languageToStyles = (language: Language) => {
     exp2: "bg-green-600 text-white",
     func1: "bg-cyan-400 text-white",
     func2: "bg-blue-600 text-white",
+    funcpipe: "bg-indigo-600 text-white",
     func3: "bg-red-600 text-white",
     imp1: "bg-pink-600 text-white",
     imp2: "bg-amber-600 text-white",

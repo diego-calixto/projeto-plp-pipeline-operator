@@ -49,47 +49,65 @@ A gramática formal da LF2 é estendida com os novos níveis de precedência. A 
 # BNF
 
 ```
-(* Regra raiz da linguagem *)
-<Expressao>         ::= <ExpPipeline>
+    Programa ::= Expressao
 
-(* Operador de Pipeline (|>) - Menor precedência, associativo à esquerda *)
-<ExpPipeline>       ::= <ExpPipeline> "|>" <ExpComposicao>
-                      | <ExpComposicao>
+    Expressao ::= ExpPipeline
 
-(* Operador de Composição (>>) - Precedência intermediária, associativo à esquerda *)
-<ExpComposicao>     ::= <ExpComposicao> ">>" <ExpLogicaDisjuncao>
-                      | <ExpLogicaDisjuncao>
+    ExpPipeline ::= ExpPipeline "|>" ExpComposicao
+                | ExpComposicao
 
-(* Expressões Lógicas, Relacionais e Aritméticas (LF2 Padrão) *)
-<ExpLogicaDisjuncao>::= <ExpLogicaDisjuncao> "or" <ExpLogicaConjuncao>
-                      | <ExpLogicaConjuncao>
+    ExpComposicao ::= ExpComposicao ">>" ExpBinaria
+                    | ExpBinaria
 
-<ExpLogicaConjuncao>::= <ExpLogicaConjuncao> "and" <ExpRelacional>
-                      | <ExpRelacional>
+    ExpBinaria ::= ExpBinaria "+" ExpUnaria
+                | ExpBinaria "-" ExpUnaria
+                | ExpBinaria "and" ExpUnaria
+                | ExpBinaria "or" ExpUnaria
+                | ExpBinaria "==" ExpUnaria
+                | ExpBinaria "++" ExpUnaria
+                | ExpUnaria
 
-<ExpRelacional>     ::= <ExpAditiva> "==" <ExpAditiva>
-                      | <ExpAditiva> "<=" <ExpAditiva>
-                      | <ExpAditiva>
+    ExpUnaria ::= "-" ExpUnaria
+                | "not" ExpUnaria
+                | "length" ExpUnaria
+                | Valor
+                | Id
+                | Aplicacao
+                | ExpDeclaracao
+                | IfThenElse
 
-<ExpAditiva>        ::= <ExpAditiva> "+" <ExpMultiplicativa>
-                      | <ExpAditiva> "-" <ExpMultiplicativa>
-                      | <ExpMultiplicativa>
+    Valor ::= ValorConcreto
+            | ValorAbstrato
 
-<ExpMultiplicativa> ::= <ExpMultiplicativa> "*" <ExpAplicacao>
-                      | <ExpMultiplicativa> "/" <ExpAplicacao>
-                      | <ExpAplicacao>
+    ValorAbstrato ::= ValorFuncao
 
-(* Aplicação de Função e Termos Primários - Maior precedência *)
-<ExpAplicacao>      ::= <ExpPrimaria> "(" <Expressao> ")"
-                      | <ExpPrimaria>
+    ValorConcreto ::= ValorInteiro
+                    | ValorBooleano
+                    | ValorString
 
-<ExpPrimaria>       ::= <Id>
-                      | <ValorPrimitivo>
-                      | <ExpFuncao>
-                      | "(" <Expressao> ")"
+    ValorFuncao ::= "fn" ListId "." Expressao
 
-(* Definição de Abstração Funcional (LF2 Padrão) *)
-<ExpFuncao>         ::= "fn" <Id> "=>" <Expressao>
+    ExpDeclaracao ::= "let" DeclaracaoFuncional "in" Expressao
+
+    DeclaracaoFuncional ::= DecVariavel
+                        | DecFuncao
+                        | DecComposta
+
+    DecVariavel ::= "var" Id "=" Expressao
+
+    DecFuncao ::= "fun" ListId "=" Expressao
+
+    DecComposta ::= DeclaracaoFuncional "," DeclaracaoFuncional
+
+    ListId ::= Id
+            | Id ListId
+
+    Aplicacao ::= Expressao "(" ListExp ")"
+
+    ListExp ::= Expressao
+            | Expressao "," ListExp
+
+    IfThenElse ::= "if" Expressao "then" Expressao "else" Expressao
 ```
 
 ### Propriedades da Gramática:
