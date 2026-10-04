@@ -49,65 +49,57 @@ A gramática formal da LF2 é estendida com os novos níveis de precedência. A 
 # BNF
 
 ```
-    Programa ::= Expressao
+Programa ::= Expressao
 
-    Expressao ::= ExpPipeline
+Expressao ::= Valor
+      | ExpUnaria 
+      | ExpBinaria
+      | ExpDeclaracao
+      | Id
+      | Aplicacao
+      | IfThenElse
 
-    ExpPipeline ::= ExpPipeline "|>" ExpComposicao
-                | ExpComposicao
+Valor ::= ValorConcreto
+      | ValorAbstrato
 
-    ExpComposicao ::= ExpComposicao ">>" ExpBinaria
-                    | ExpBinaria
+ValorAbstrato ::= ValorFuncao
 
-    ExpBinaria ::= ExpBinaria "+" ExpUnaria
-                | ExpBinaria "-" ExpUnaria
-                | ExpBinaria "and" ExpUnaria
-                | ExpBinaria "or" ExpUnaria
-                | ExpBinaria "==" ExpUnaria
-                | ExpBinaria "++" ExpUnaria
-                | ExpUnaria
+ValorConcreto ::= ValorInteiro
+      | ValorBooleano
+      | ValorString
 
-    ExpUnaria ::= "-" ExpUnaria
-                | "not" ExpUnaria
-                | "length" ExpUnaria
-                | Valor
-                | Id
-                | Aplicacao
-                | ExpDeclaracao
-                | IfThenElse
+ValorFuncao ::= “fn” ListId “.” Expressao
 
-    Valor ::= ValorConcreto
-            | ValorAbstrato
+ExpUnaria ::= “-“ Expressao
+      | “not” Expressao
+      | “length” Expressao
 
-    ValorAbstrato ::= ValorFuncao
+ExpBinaria ::= Expressao “+” Expressao
+      | Expressao “-“ Expressao
+      | Expressao “and” Expressao
+      | Expressao “or” Expressao
+      | Expressao “==” Expressao
+      | Expressao “++” Expressao
+      | Expressao "|>" Expressao
+      | Expressao ">>" Expressao
 
-    ValorConcreto ::= ValorInteiro
-                    | ValorBooleano
-                    | ValorString
+ExpDeclaracao ::= “let” DeclaracaoFuncional “in” Expressao
 
-    ValorFuncao ::= "fn" ListId "." Expressao
+DeclaracaoFuncional ::= DecVariavel
+      | DecFuncao
+      | DecComposta
 
-    ExpDeclaracao ::= "let" DeclaracaoFuncional "in" Expressao
+DecVariavel ::= “var” Id “=” Expressao
 
-    DeclaracaoFuncional ::= DecVariavel
-                        | DecFuncao
-                        | DecComposta
+DecFuncao ::= “fun” ListId “=” Expressao
 
-    DecVariavel ::= "var" Id "=" Expressao
+DecComposta ::= DeclaracaoFuncional “,” DeclaracaoFuncional
 
-    DecFuncao ::= "fun" ListId "=" Expressao
+ListId ::= Id | Id ListId
 
-    DecComposta ::= DeclaracaoFuncional "," DeclaracaoFuncional
+Aplicacao ::= Expressao “(“ ListExp “)”
 
-    ListId ::= Id
-            | Id ListId
-
-    Aplicacao ::= Expressao "(" ListExp ")"
-
-    ListExp ::= Expressao
-            | Expressao "," ListExp
-
-    IfThenElse ::= "if" Expressao "then" Expressao "else" Expressao
+ListExp ::= Expressao | Expressao “, “ ListExp
 ```
 
 ### Propriedades da Gramática:
