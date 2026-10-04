@@ -1,5 +1,9 @@
 # Proposta de Projeto: Extensão da Linguagem Funcional 2 (LF2) com Operadores de Pipeline e Composição de Funções
 
+## Alunos:
+* Diego Henrique Vilaça Calixto
+* Júlia Arnaud de Melo Fragoso
+
 ## 1. Contexto
 
 A Linguagem Funcional 2 (LF2), utilizada como linguagem de estudo na disciplina de Paradigmas de Linguagens de Programação (PLP), disponibiliza suporte a funções como valores de primeira classe e funções de alta ordem. Contudo, a avaliação de chamadas de funções encadeadas na LF2 exige o aninhamento sucessivo de parênteses (por exemplo, `g(f(h(x)))`), o que prejudica a legibilidade e contrapõe o fluxo natural de transformação de dados.
