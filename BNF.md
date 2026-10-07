@@ -3,7 +3,10 @@
     Expressao ::= ExpPipeline
 
     ExpPipeline ::= ExpPipeline "|>" ExpComposicao
+                | ArgumentosPipeline "|>" ExpComposicao
                 | ExpComposicao
+
+    ArgumentosPipeline ::= "(" ListExp ")"
 
     ExpComposicao ::= ExpComposicao ">>" ExpBinaria
                     | ExpBinaria
@@ -24,6 +27,7 @@
                 | Aplicacao
                 | ExpDeclaracao
                 | IfThenElse
+                | "(" Expressao ")"
 
     Valor ::= ValorConcreto
             | ValorAbstrato
