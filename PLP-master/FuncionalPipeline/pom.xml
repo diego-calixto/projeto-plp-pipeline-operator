@@ -9,6 +9,7 @@
   </properties>
   <build>
     <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
     <resources>
       <resource>
         <directory>src</directory>
@@ -44,6 +45,19 @@
           <mainClass>lfp.plp.functional2.parser.Func2Parser</mainClass>
           <commandlineArgs>input</commandlineArgs>
         </configuration>
+        <executions>
+          <execution>
+            <id>pipeline-syntax-tests</id>
+            <phase>test</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>lfp.plp.functional2.parser.Funcional2SyntaxTest</mainClass>
+              <classpathScope>test</classpathScope>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
