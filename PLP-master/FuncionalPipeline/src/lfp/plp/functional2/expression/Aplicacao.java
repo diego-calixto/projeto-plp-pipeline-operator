@@ -38,7 +38,11 @@ public class Aplicacao implements Expressao {
 	public Valor avaliar(AmbienteExecucao ambiente)
 			throws VariavelNaoDeclaradaException, VariavelJaDeclaradaException {
 
-		ValorFuncao funcao = (ValorFuncao) func.avaliar(ambiente);
+		Valor val = func.avaliar(ambiente);
+		if (!(val instanceof ValorFuncao)) {
+			throw new TiposIncompativeisException("Tentativa de chamar expressao nao funcional: " + func);
+		}
+		ValorFuncao funcao = (ValorFuncao) val;
 
 		Map<Id, Valor> mapIdValor = resolveParametersBindings(ambiente, funcao);
 		ambiente.incrementa();		
@@ -72,22 +76,25 @@ public class Aplicacao implements Expressao {
 	 */
 	public boolean checaTipo(AmbienteCompilacao ambiente)
 			throws VariavelNaoDeclaradaException, VariavelJaDeclaradaException {
+		if (!func.checaTipo(ambiente)) {
+			return false;
+		}
 		Tipo tipo = getFuncType(ambiente);
 
-		boolean result;
+		if (tipo == null || !(tipo instanceof TipoFuncao)) {
+			return false;
+		}
 
 		TipoFuncao tipoFuncao = (TipoFuncao) tipo;
-		result = tipoFuncao.checaTipo(ambiente, argsExpressao);
-
-		return result;
+		return tipoFuncao.checaTipo(ambiente, argsExpressao);
 	}
 
 	private Tipo getFuncType(AmbienteCompilacao ambiente) {
 		Tipo tipoFuncao = null;
 		if (func instanceof Id) {
 			tipoFuncao = ambiente.get((Id) func);
-		} else if (func instanceof ValorFuncao) {
-			tipoFuncao = ((ValorFuncao) func).getTipo(ambiente);
+		} else if (func != null) {
+			tipoFuncao = func.getTipo(ambiente);
 		}
 
 		if (tipoFuncao == null || tipoFuncao instanceof TipoPolimorfico) {

@@ -32,6 +32,8 @@ import lfp.plp.functional2.declaration.DecFuncao;
 import lfp.plp.functional2.expression.Aplicacao;
 import lfp.plp.functional2.expression.ExpDeclaracao;
 import lfp.plp.functional2.expression.ValorFuncao;
+import lfp.plp.functional2.expression.ExpPipeline;
+import lfp.plp.functional2.expression.ExpComposicao;
 
 /**
  * @author S�rgio
@@ -336,6 +338,20 @@ public class PartialInstantiatorVisitor {
 		
 		ValorFuncao resultado = new ValorFuncao(listaId, novaExpressao);
 		return resultado;
+	}
+
+	public Expressao _visitExpPipeline(ExpPipeline expressao,
+			AmbienteExecucao ambiente, Set<Id> localVariables) {
+		Expressao esquerda = visit(expressao.getEsq(), ambiente, localVariables);
+		Expressao direita = visit(expressao.getDir(), ambiente, localVariables);
+		return new ExpPipeline(esquerda, direita);
+	}
+
+	public Expressao _visitExpComposicao(ExpComposicao expressao,
+			AmbienteExecucao ambiente, Set<Id> localVariables) {
+		Expressao esquerda = visit(expressao.getEsq(), ambiente, localVariables);
+		Expressao direita = visit(expressao.getDir(), ambiente, localVariables);
+		return new ExpComposicao(esquerda, direita);
 	}
 
 }

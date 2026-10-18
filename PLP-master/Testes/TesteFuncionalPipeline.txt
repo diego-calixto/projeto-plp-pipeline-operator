@@ -1,0 +1,3 @@
+let fun inc x = x + 1,
+    fun dobro x = x + x
+in 5 |> inc >> dobro

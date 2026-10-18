@@ -174,17 +174,21 @@ public final class PlpWebApi {
     }
   }
 
-  private void interpretarFuncPipe(InputStream fis, String src) throws Exception {
-    if (funcPipeParser == null) funcPipeParser = new lfp.plp.functional2.parser.Func2Parser(fis);
-    else lfp.plp.functional2.parser.Func2Parser.ReInit(fis);
-    lfp.plp.functional2.Programa prog = lfp.plp.functional2.parser.Func2Parser.Input();
-    message = "sintaxe verificada com sucesso!";
-    if (prog.checaTipo()) {
-      output = prog.executar().toString();
-    } else {
-      throw new RuntimeException("erro de tipos!");
-    }
+ private void interpretarFuncPipe(InputStream fis, String src) throws Exception {
+  if (funcPipeParser == null) {
+    funcPipeParser = new lfp.plp.functional2.parser.Func2Parser(fis);
+  } else {
+    funcPipeParser.ReInit(fis);
   }
+
+  lfp.plp.functional2.Programa prog = funcPipeParser.Input();
+  message = "sintaxe verificada com sucesso!";
+  if (prog.checaTipo()) {
+    output = prog.executar().toString();
+  } else {
+    throw new RuntimeException("erro de tipos!");
+  }
+}
 
   private void interpretarImp1(InputStream fis, String entradaStr, String src) throws Exception {
     if (imp1DebugParser == null) imp1DebugParser = new plp.debug.imperativa1.parser.Imp1DebugParser(fis);

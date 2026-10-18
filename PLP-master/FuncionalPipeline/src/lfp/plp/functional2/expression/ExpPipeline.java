@@ -1,93 +1,103 @@
 package lfp.plp.functional2.expression;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import lfp.plp.expressions1.util.Tipo;
+import lfp.plp.expressions2.expression.ExpBinaria;
 import lfp.plp.expressions2.expression.Expressao;
+import lfp.plp.expressions2.expression.Id;
 import lfp.plp.expressions2.expression.Valor;
 import lfp.plp.expressions2.memory.AmbienteCompilacao;
 import lfp.plp.expressions2.memory.AmbienteExecucao;
 import lfp.plp.expressions2.memory.VariavelJaDeclaradaException;
 import lfp.plp.expressions2.memory.VariavelNaoDeclaradaException;
+import lfp.plp.functional1.util.TipoFuncao;
+import lfp.plp.functional1.util.TipoPolimorfico;
 
-public class ExpPipeline implements Expressao {
+/**
+ * Representa uma expressao de Forward Pipeline (esq |> dir) compativel com a BNF.
+ * Passa o resultado da expressao da esquerda como argumento para a funcao da direita.
+ */
+public class ExpPipeline extends ExpBinaria {
 
-	private Expressao esquerda;
-	private List<Expressao> argumentosEsquerda;
-	private Expressao direita;
-
-	public ExpPipeline(Expressao esquerda, Expressao direita) {
-		this.esquerda = esquerda;
-		this.direita = direita;
+	public ExpPipeline(Expressao esq, Expressao dir) {
+		super(esq, dir, "|>");
 	}
 
-	public ExpPipeline(List<? extends Expressao> argumentosEsquerda,
-			Expressao direita) {
-		this.argumentosEsquerda = new ArrayList<Expressao>(argumentosEsquerda);
-		this.direita = direita;
+	public Expressao getDado() {
+		return getEsq();
 	}
 
-	public Expressao getEsquerda() {
-		return esquerda;
+	public Expressao getFuncao() {
+		return getDir();
 	}
 
-	public List<Expressao> getArgumentosEsquerda() {
-		return argumentosEsquerda;
-	}
-
-	public Expressao getDireita() {
-		return direita;
-	}
-
-	@Override
-	public Valor avaliar(AmbienteExecucao ambiente)
+	private Tipo getFuncType(AmbienteCompilacao amb)
 			throws VariavelNaoDeclaradaException, VariavelJaDeclaradaException {
-		throw new UnsupportedOperationException(
-				"Pipeline evaluation is not implemented.");
+		Tipo tipo = null;
+		if (getDir() instanceof Id) {
+			tipo = amb.get((Id) getDir());
+		} else if (getDir() != null) {
+			tipo = getDir().getTipo(amb);
+		}
+		return tipo;
 	}
 
 	@Override
-	public boolean checaTipo(AmbienteCompilacao ambiente)
+	public Valor avaliar(AmbienteExecucao amb)
 			throws VariavelNaoDeclaradaException, VariavelJaDeclaradaException {
-		throw new UnsupportedOperationException(
-				"Pipeline type checking is not implemented.");
+		Valor valDir = getDir().avaliar(amb);
+		if (!(valDir instanceof ValorFuncao)) {
+			throw new TiposIncompativeisException("Expressao a direita do operador |> deve ser funcional, mas foi: " + valDir);
+		}
+
+		Valor valEsq = getEsq().avaliar(amb);
+		List<Expressao> args = Collections.singletonList((Expressao) valEsq);
+
+		Aplicacao app = new Aplicacao(getDir(), args);
+		return app.avaliar(amb);
 	}
 
 	@Override
-	public Tipo getTipo(AmbienteCompilacao ambiente)
+	protected boolean checaTipoElementoTerminal(AmbienteCompilacao amb)
 			throws VariavelNaoDeclaradaException, VariavelJaDeclaradaException {
-		throw new UnsupportedOperationException(
-				"Pipeline type inference is not implemented.");
+		Tipo tipoDir = getFuncType(amb);
+		if (tipoDir == null) {
+			return false;
+		}
+
+		if (tipoDir instanceof TipoFuncao) {
+			TipoFuncao tf = (TipoFuncao) tipoDir;
+			return tf.checaTipo(amb, Collections.singletonList(getEsq()));
+		}
+
+		if (tipoDir instanceof TipoPolimorfico) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
-	public Expressao reduzir(AmbienteExecucao ambiente) {
-		if (esquerda != null) {
-			esquerda = esquerda.reduzir(ambiente);
+	public Tipo getTipo(AmbienteCompilacao amb)
+			throws VariavelNaoDeclaradaException, VariavelJaDeclaradaException {
+		Tipo tipoDir = getFuncType(amb);
+
+		if (tipoDir instanceof TipoFuncao) {
+			TipoFuncao tf = (TipoFuncao) tipoDir;
+			return tf.getTipo(amb, Collections.singletonList(getEsq()));
 		}
-		if (argumentosEsquerda != null) {
-			List<Expressao> reduzidos =
-					new ArrayList<Expressao>(argumentosEsquerda.size());
-			for (Expressao argumento : argumentosEsquerda) {
-				reduzidos.add(argumento.reduzir(ambiente));
-			}
-			argumentosEsquerda = reduzidos;
+
+		if (tipoDir instanceof TipoPolimorfico) {
+			return new TipoPolimorfico();
 		}
-		direita = direita.reduzir(ambiente);
-		return this;
+
+		return null;
 	}
 
 	@Override
-	public ExpPipeline clone() {
-		if (argumentosEsquerda != null) {
-			List<Expressao> copiados =
-					new ArrayList<Expressao>(argumentosEsquerda.size());
-			for (Expressao argumento : argumentosEsquerda) {
-				copiados.add(argumento.clone());
-			}
-			return new ExpPipeline(copiados, direita.clone());
-		}
-		return new ExpPipeline(esquerda.clone(), direita.clone());
+	public ExpBinaria clone() {
+		return new ExpPipeline(esq.clone(), dir.clone());
 	}
 }
