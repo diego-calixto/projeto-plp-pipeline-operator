@@ -1,52 +1,59 @@
 Programa ::= Expressao
 
 Expressao ::= Valor
-      | ExpUnaria 
-      | ExpBinaria
-      | ExpDeclaracao
-      | Id
-      | Aplicacao
-      | IfThenElse
+            | ExpUnaria
+            | ExpBinaria
+            | ExpDeclaracao
+            | Id
+            | Aplicacao
+            | IfThenElse
+            | "(" Expressao ")"
 
 Valor ::= ValorConcreto
-      | ValorAbstrato
+        | ValorAbstrato
 
 ValorAbstrato ::= ValorFuncao
 
 ValorConcreto ::= ValorInteiro
-      | ValorBooleano
-      | ValorString
+                | ValorBooleano
+                | ValorString
 
-ValorFuncao ::= “fn” ListId “.” Expressao
+ValorFuncao ::= "fn" ListId "." Expressao
 
-ExpUnaria ::= “-“ Expressao
-      | “not” Expressao
-      | “length” Expressao
+ExpUnaria ::= "-" Expressao
+            | "not" Expressao
+            | "length" Expressao
 
-ExpBinaria ::= Expressao “+” Expressao
-      | Expressao “-“ Expressao
-      | Expressao “and” Expressao
-      | Expressao “or” Expressao
-      | Expressao “==” Expressao
-      | Expressao “++” Expressao
-      | Expressao "|>" Expressao
-      | Expressao ">>" Expressao
+ExpBinaria ::= Expressao "+" Expressao
+             | Expressao "-" Expressao
+             | Expressao "and" Expressao
+             | Expressao "or" Expressao
+             | Expressao "==" Expressao
+             | Expressao "++" Expressao
+             | Expressao "|>" Expressao
+             | ArgumentosPipeline "|>" Expressao
+             | Expressao ">>" Expressao
 
-ExpDeclaracao ::= “let” DeclaracaoFuncional “in” Expressao
+ArgumentosPipeline ::= "(" ListExp ")"
+
+ExpDeclaracao ::= "let" DeclaracaoFuncional "in" Expressao
 
 DeclaracaoFuncional ::= DecVariavel
-      | DecFuncao
-      | DecComposta
+                      | DecFuncao
+                      | DecComposta
 
-DecVariavel ::= “var” Id “=” Expressao
+DecVariavel ::= "var" Id "=" Expressao
 
-DecFuncao ::= “fun” ListId “=” Expressao
+DecFuncao ::= "fun" ListId "=" Expressao
 
-DecComposta ::= DeclaracaoFuncional “,” DeclaracaoFuncional
+DecComposta ::= DeclaracaoFuncional "," DeclaracaoFuncional
 
-ListId ::= Id | Id ListId
+ListId ::= Id
+         | Id ListId
 
-Aplicacao ::= Expressao “(“ ListExp “)”
+Aplicacao ::= Expressao "(" ListExp ")"
 
-ListExp ::= Expressao | Expressao “, “ ListExp
+ListExp ::= Expressao
+          | Expressao "," ListExp
 
+IfThenElse ::= "if" Expressao "then" Expressao "else" Expressao
