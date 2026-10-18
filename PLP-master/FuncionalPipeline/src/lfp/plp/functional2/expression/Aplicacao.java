@@ -44,21 +44,27 @@ public class Aplicacao implements Expressao {
 		}
 		ValorFuncao funcao = (ValorFuncao) val;
 
-		Map<Id, Valor> mapIdValor = resolveParametersBindings(ambiente, funcao);
-		ambiente.incrementa();		
-		includeValueBindings(ambiente, mapIdValor);
-
-		if(funcao.getId() != null){
-			ambiente.map(funcao.getId(), funcao.clone());
+		if (argsExpressao.size() != funcao.getAridade()) {
+			throw new TiposIncompativeisException(String.format(
+					"Aridade incompatível na aplicação de %s: esperado %d argumento(s), recebido(s) %d.",
+					func, funcao.getAridade(), argsExpressao.size()));
 		}
-		Expressao exp = funcao.getExp().clone();
-		exp.reduzir(ambiente);
-		
-		Valor vresult = exp.avaliar(ambiente);
-		
-		ambiente.restaura();
-		
-		return vresult;
+
+		Map<Id, Valor> mapIdValor = resolveParametersBindings(ambiente, funcao);
+		ambiente.incrementa();
+		try {
+			includeValueBindings(ambiente, mapIdValor);
+
+			if(funcao.getId() != null){
+				ambiente.map(funcao.getId(), funcao.clone());
+			}
+			Expressao exp = funcao.getExp().clone();
+			exp.reduzir(ambiente);
+
+			return exp.avaliar(ambiente);
+		} finally {
+			ambiente.restaura();
+		}
 	}
 
 	/**
@@ -142,6 +148,10 @@ public class Aplicacao implements Expressao {
 			throws VariavelNaoDeclaradaException, VariavelJaDeclaradaException {
 
 		Tipo tipo = getFuncType(ambiente);
+		if (!(tipo instanceof TipoFuncao)
+				|| ((TipoFuncao) tipo).getDominio().size() != argsExpressao.size()) {
+			return null;
+		}
 
 		TipoFuncao tipoFuncao = (TipoFuncao) tipo;
 
@@ -161,14 +171,12 @@ public class Aplicacao implements Expressao {
 			DefFuncao funcao) throws VariavelNaoDeclaradaException,
 			VariavelJaDeclaradaException {
 		List<Id> parametrosId = funcao.getListaId();
-		List<? extends Expressao> expressoesValorReal = argsExpressao;
 
 		Map<Id, Valor> mapIdValor = new HashMap<Id, Valor>();
 
-		Iterator<? extends Expressao> iterExpressoesValor = expressoesValorReal
-				.iterator();
-		for (Id id : parametrosId) {
-			Expressao exp = iterExpressoesValor.next();
+		for (int i = 0; i < parametrosId.size(); i++) {
+			Id id = parametrosId.get(i);
+			Expressao exp = argsExpressao.get(i);
 			Valor valorReal = exp.avaliar(ambiente);
 			mapIdValor.put(id, valorReal);
 		}

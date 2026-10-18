@@ -737,9 +737,19 @@ Expressao PExpressao() :
 Expressao PExpPipeline() :
 {
   Expressao retorno, param2;
+  List argumentos = null;
 }
 {
-  retorno = PExpComposicao()
+  (
+    LOOKAHEAD(< LPAREN > PExpressao() < COMMA >)
+    < LPAREN > argumentos = PListaExpr() < RPAREN >
+    < PIPELINE > param2 = PExpComposicao()
+    {
+      retorno = new ExpPipeline(argumentos, param2);
+    }
+  |
+    retorno = PExpComposicao()
+  )
   (
     < PIPELINE > param2 = PExpComposicao()
     {

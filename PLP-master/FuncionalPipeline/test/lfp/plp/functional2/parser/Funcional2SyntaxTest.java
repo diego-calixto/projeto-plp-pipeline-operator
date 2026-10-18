@@ -18,41 +18,41 @@ public final class Funcional2SyntaxTest {
 	public static void main(String[] args) throws Exception {
 		assertPipeline("a |> f", "a", "f");
 		ExpPipeline chained = (ExpPipeline) parse("a |> f |> g");
-		assertEquals("g", ((Id) chained.getDireita()).getIdName());
-		assertPipeline(chained.getEsquerda(), "a", "f");
+		assertEquals("g", ((Id) chained.getDir()).getIdName());
+		assertPipeline(chained.getEsq(), "a", "f");
 
 		ExpPipeline composedChain =
 				(ExpPipeline) parse("a |> f >> g >> h");
 		ExpComposicao outerComposition =
-				(ExpComposicao) composedChain.getDireita();
-		assertComposition(outerComposition.getEsquerda(), "f", "g");
-		assertEquals("h", ((Id) outerComposition.getDireita()).getIdName());
+				(ExpComposicao) composedChain.getDir();
+		assertComposition(outerComposition.getEsq(), "f", "g");
+		assertEquals("h", ((Id) outerComposition.getDir()).getIdName());
 
 		ExpPipeline composedPipeline =
 				(ExpPipeline) parse("a |> f >> g");
-		assertEquals("a", ((Id) composedPipeline.getEsquerda()).getIdName());
-		assertComposition(composedPipeline.getDireita(), "f", "g");
+		assertEquals("a", ((Id) composedPipeline.getEsq()).getIdName());
+		assertComposition(composedPipeline.getDir(), "f", "g");
 
 		assertPipelineArguments("(a, b) |> f", "a", "b");
 		assertPipelineArguments("(a, b, c) |> f", "a", "b", "c");
 		ExpPipeline groupedArgument = (ExpPipeline) parse("(a) |> f");
-		assertEquals("a", ((Id) groupedArgument.getEsquerda()).getIdName());
+		assertEquals("a", ((Id) groupedArgument.getEsq()).getIdName());
 		ExpPipeline groupedExpression =
 				(ExpPipeline) parse("(a + b) |> f");
-		if (!(groupedExpression.getEsquerda() instanceof ExpSoma)
+		if (!(groupedExpression.getEsq() instanceof ExpSoma)
 				|| groupedExpression.getArgumentosEsquerda() != null) {
 			throw new AssertionError(
 					"Grouped expression was mistaken for pipeline arguments.");
 		}
 		ExpPipeline argumentsChained =
 				(ExpPipeline) parse("(a, b) |> f |> g");
-		assertEquals("g", ((Id) argumentsChained.getDireita()).getIdName());
-		assertPipelineArguments(argumentsChained.getEsquerda(), "a", "b");
+		assertEquals("g", ((Id) argumentsChained.getDir()).getIdName());
+		assertPipelineArguments(argumentsChained.getEsq(), "a", "b");
 
 		ExpPipeline argumentsComposition =
 				(ExpPipeline) parse("(a, b) |> f >> g");
 		assertEquals(2, argumentsComposition.getArgumentosEsquerda().size());
-		assertComposition(argumentsComposition.getDireita(), "f", "g");
+		assertComposition(argumentsComposition.getDir(), "f", "g");
 
 		parse("a + b");
 		parse("f(a, b)");
@@ -71,8 +71,8 @@ public final class Funcional2SyntaxTest {
 	private static void assertPipeline(Expressao expression, String left,
 			String right) {
 		ExpPipeline pipeline = (ExpPipeline) expression;
-		assertEquals(left, ((Id) pipeline.getEsquerda()).getIdName());
-		assertEquals(right, ((Id) pipeline.getDireita()).getIdName());
+		assertEquals(left, ((Id) pipeline.getEsq()).getIdName());
+		assertEquals(right, ((Id) pipeline.getDir()).getIdName());
 	}
 
 	private static void assertPipelineArguments(String source, String... names)
@@ -88,14 +88,14 @@ public final class Funcional2SyntaxTest {
 		for (int i = 0; i < names.length; i++) {
 			assertEquals(names[i], ((Id) args.get(i)).getIdName());
 		}
-		assertEquals("f", ((Id) pipeline.getDireita()).getIdName());
+		assertEquals("f", ((Id) pipeline.getDir()).getIdName());
 	}
 
 	private static void assertComposition(Expressao expression, String left,
 			String right) {
 		ExpComposicao composition = (ExpComposicao) expression;
-		assertEquals(left, ((Id) composition.getEsquerda()).getIdName());
-		assertEquals(right, ((Id) composition.getDireita()).getIdName());
+		assertEquals(left, ((Id) composition.getEsq()).getIdName());
+		assertEquals(right, ((Id) composition.getDir()).getIdName());
 	}
 
 	private static Expressao parse(String source) throws Exception {
