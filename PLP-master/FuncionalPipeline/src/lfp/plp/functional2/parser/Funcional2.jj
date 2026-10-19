@@ -285,9 +285,6 @@ TOKEN : /* OPERATORS */
   < ASSIGN : "=" >
 | < PIPELINE : "|>" >
 | < COMPOSE : ">>" >
-  < PIPELINE : "|>" >
-| < COMPOSE : ">>" >
-| < ASSIGN : "=" >
 | < GT : ">" >
 | < LT : "<" >
 | < BANG : "!" >
