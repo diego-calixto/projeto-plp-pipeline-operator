@@ -576,8 +576,8 @@ Expressao PExpCondicional() :
   Expressao expCond, expThen, expElse;
 }
 {
-  < IF > expCond = PExpressao() < THEN > expThen = PExpressao() 
-  < ELSE > expElse = PExpressao()
+  < IF > expCond = PExpressao() < THEN > expThen = PExpComposicao() 
+  < ELSE > expElse = PExpComposicao()
   {
     return new IfThenElse(expCond, expThen, expElse);
   }
