@@ -3,7 +3,6 @@ package lfp.plp.functional2.expression;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 import lfp.plp.expressions1.util.Tipo;
 import lfp.plp.expressions2.expression.ExpBinaria;
@@ -22,8 +21,6 @@ import lfp.plp.functional1.util.TipoPolimorfico;
  * Compoe duas funcoes da esquerda para a direita, equivalente a (f >> g)(x) = g(f(x)).
  */
 public class ExpComposicao extends ExpBinaria {
-
-	private static final AtomicLong paramCounter = new AtomicLong(0);
 
 	public ExpComposicao(Expressao esq, Expressao dir) {
 		super(esq, dir, ">>");
@@ -61,8 +58,7 @@ public class ExpComposicao extends ExpBinaria {
 		ValorFuncao vfF = (ValorFuncao) funcF;
 		ValorFuncao vfG = (ValorFuncao) funcG;
 
-		long uniqueId = paramCounter.incrementAndGet();
-		Id p = new Id("$$pipeArg_" + uniqueId);
+		Id p = new Id("arg");
 		List<Id> params = Collections.singletonList(p);
 
 		Expressao chamadaF = new Aplicacao(vfF, Collections.singletonList((Expressao) p));

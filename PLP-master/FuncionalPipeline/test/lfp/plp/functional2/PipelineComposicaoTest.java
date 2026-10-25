@@ -17,12 +17,14 @@ import lfp.plp.expressions2.expression.Expressao;
 import lfp.plp.expressions2.expression.ExpSoma;
 import lfp.plp.expressions2.expression.Id;
 import lfp.plp.expressions2.expression.Valor;
+import lfp.plp.expressions2.expression.ValorBooleano;
 import lfp.plp.expressions2.expression.ValorInteiro;
 import lfp.plp.expressions2.expression.ValorString;
 import lfp.plp.expressions2.memory.AmbienteCompilacao;
 import lfp.plp.expressions2.memory.AmbienteExecucao;
 import lfp.plp.expressions2.memory.ContextoCompilacao;
 import lfp.plp.expressions2.memory.ContextoExecucao;
+import lfp.plp.functional1.expression.IfThenElse;
 import lfp.plp.functional1.util.TipoFuncao;
 import lfp.plp.functional2.expression.Aplicacao;
 import lfp.plp.functional2.expression.ExpComposicao;
@@ -196,6 +198,16 @@ public class PipelineComposicaoTest {
 	}
 
 	@Test
+	public void testComposicaoRetornaFuncaoComParametroLegivel() throws Exception {
+		String codigo = "let fun soma1 x = x + 1 in let fun soma2 y = y + 2 in soma1 >> soma2";
+		Programa prog = parse(codigo);
+		assertTrue(prog.checaTipo());
+		Valor res = prog.executar();
+		assertTrue(res instanceof ValorFuncao);
+		assertEquals("fn arg . fn y . y + 2(fn x . x + 1(arg))", res.toString());
+	}
+
+	@Test
 	public void testParsingPipelineComLambdas() throws Exception {
 		String codigo = "5 |> (fn x . x + x) |> (fn y . y + 10)";
 		Programa prog = parse(codigo);
@@ -209,6 +221,67 @@ public class PipelineComposicaoTest {
 		Programa prog = parse(codigo);
 		assertTrue(prog.checaTipo());
 		assertEquals(new ValorInteiro(6), prog.executar());
+	}
+
+	@Test
+	public void testIfThenElseBasico() throws Exception {
+		Programa progTrue = parse("if true then 10 else 20");
+		assertTrue(progTrue.checaTipo());
+		assertEquals(new ValorInteiro(10), progTrue.executar());
+
+		Programa progFalse = parse("if false then 10 else 20");
+		assertTrue(progFalse.checaTipo());
+		assertEquals(new ValorInteiro(20), progFalse.executar());
+
+		Programa progCond = parse("if (5 == 5) then \"igual\" else \"diferente\"");
+		assertTrue(progCond.checaTipo());
+		assertEquals(new ValorString("igual"), progCond.executar());
+	}
+
+	@Test
+	public void testIfThenElseComPipeline() throws Exception {
+		// Selecionando ramo else via condicao booleana e aplicando via pipeline
+		String codigoElse = "5 |> if false then (fn x . x + 1) else (fn x . x + 2)";
+		Programa progElse = parse(codigoElse);
+		assertTrue(progElse.checaTipo());
+		assertEquals(new ValorInteiro(7), progElse.executar());
+
+		// Resultado de if-then-else sendo passado para um pipeline
+		String codigoPipeEntrada = "(if true then 10 else 20) |> (fn x . x + 5)";
+		Programa progPipe = parse(codigoPipeEntrada);
+		assertTrue(progPipe.checaTipo());
+		assertEquals(new ValorInteiro(15), progPipe.executar());
+	}
+
+	@Test
+	public void testIfThenElseRejeitaTiposIncompativeis() throws Exception {
+		// Tipos de then e else incompativeis
+		Programa progRamos = parse("if true then 10 else \"texto\"");
+		assertFalse(progRamos.checaTipo());
+
+		// Condicao nao-booleana
+		Programa progCondNaoBool = parse("if 10 then 1 else 2");
+		assertFalse(progCondNaoBool.checaTipo());
+	}
+
+	@Test
+	public void testASTIfThenElse() throws Exception {
+		Expressao ifExp = new IfThenElse(
+				new ValorBooleano(true),
+				new ValorInteiro(10),
+				new ValorInteiro(20));
+		AmbienteCompilacao ambComp = new ContextoCompilacao();
+		assertTrue(ifExp.checaTipo(ambComp));
+		assertTrue(ifExp.getTipo(ambComp).eInteiro());
+
+		AmbienteExecucao ambExec = new ContextoExecucao();
+		assertEquals(new ValorInteiro(10), ifExp.avaliar(ambExec));
+
+		Expressao ifFalse = new IfThenElse(
+				new ValorBooleano(false),
+				new ValorInteiro(10),
+				new ValorInteiro(20));
+		assertEquals(new ValorInteiro(20), ifFalse.avaliar(ambExec));
 	}
 
 	@Test
