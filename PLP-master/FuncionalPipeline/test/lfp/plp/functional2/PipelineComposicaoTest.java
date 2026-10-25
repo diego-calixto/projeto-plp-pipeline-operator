@@ -204,6 +204,22 @@ public class PipelineComposicaoTest {
 	}
 
 	@Test
+	public void testParsingPipelineComIfRetornandoFuncao() throws Exception {
+		String codigo = "5 |> if true then (fn x . x + 1) else (fn x . x + 2)";
+		Programa prog = parse(codigo);
+		assertTrue(prog.checaTipo());
+		assertEquals(new ValorInteiro(6), prog.executar());
+	}
+
+	@Test
+	public void testParsingPipelineComLetRetornandoFuncao() throws Exception {
+		String codigo = "5 |> (let var f = fn x . x + 1 in f)";
+		Programa prog = parse(codigo);
+		assertTrue(prog.checaTipo());
+		assertEquals(new ValorInteiro(6), prog.executar());
+	}
+
+	@Test
 	public void testAplicacaoDiretaComMultiplosArgumentos() throws Exception {
 		Programa prog = parse("let fun soma x y = x + y in soma(2, 3)");
 		assertTrue(prog.checaTipo());
