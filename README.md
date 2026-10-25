@@ -52,59 +52,101 @@ A gramática formal da LF2 é estendida com os novos níveis de precedência. A 
 
 # BNF
 
-```
-Programa ::= Expressao
+<pre>
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/Programa.java">Programa</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
 
-Expressao ::= Valor
-      | ExpUnaria 
-      | ExpBinaria
-      | ExpDeclaracao
-      | Id
-      | Aplicacao
-      | IfThenElse
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Valor.java">Valor</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpUnaria.java">ExpUnaria</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpBinaria.java">ExpBinaria</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpDeclaracao.java">ExpDeclaracao</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java">Id</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/Aplicacao.java">Aplicacao</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/expression/IfThenElse.java">IfThenElse</a>
+            | "(" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> ")"
 
-Valor ::= ValorConcreto
-      | ValorAbstrato
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Valor.java">Valor</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorConcreto.java">ValorConcreto</a>
+        | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorAbstrato.java">ValorAbstrato</a>
 
-ValorAbstrato ::= ValorFuncao
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorAbstrato.java">ValorAbstrato</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorFuncao.java">ValorFuncao</a>
 
-ValorConcreto ::= ValorInteiro
-      | ValorBooleano
-      | ValorString
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorConcreto.java">ValorConcreto</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorInteiro.java">ValorInteiro</a>
+                | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorBooleano.java">ValorBooleano</a>
+                | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorString.java">ValorString</a>
 
-ValorFuncao ::= “fn” ListId “.” Expressao
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorFuncao.java">ValorFuncao</a> ::= "fn" ListId "." <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
 
-ExpUnaria ::= “-“ Expressao
-      | “not” Expressao
-      | “length” Expressao
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpUnaria.java">ExpUnaria</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpMenos.java">"-" Expressao</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpNot.java">"not" Expressao</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpLength.java">"length" Expressao</a>
 
-ExpBinaria ::= Expressao “+” Expressao
-      | Expressao “-“ Expressao
-      | Expressao “and” Expressao
-      | Expressao “or” Expressao
-      | Expressao “==” Expressao
-      | Expressao “++” Expressao
-      | Expressao "|>" Expressao
-      | Expressao ">>" Expressao
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpBinaria.java">ExpBinaria</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpSoma.java">Expressao "+" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpSub.java">Expressao "-" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpAnd.java">Expressao "and" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpOr.java">Expressao "or" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpEquals.java">Expressao "==" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpConcat.java">Expressao "++" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpPipeline.java">Expressao "|>" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpPipeline.java">ListExp "|>" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpComposicao.java">Expressao ">>" Expressao</a>
 
-ExpDeclaracao ::= “let” DeclaracaoFuncional “in” Expressao
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpDeclaracao.java">ExpDeclaracao</a> ::= "let" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DeclaracaoFuncional.java">DeclaracaoFuncional</a> "in" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
 
-DeclaracaoFuncional ::= DecVariavel
-      | DecFuncao
-      | DecComposta
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DeclaracaoFuncional.java">DeclaracaoFuncional</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecVariavel.java">DecVariavel</a>
+                      | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/declaration/DecFuncao.java">DecFuncao</a>
+                      | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecComposta.java">DecComposta</a>
 
-DecVariavel ::= “var” Id “=” Expressao
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecVariavel.java">DecVariavel</a> ::= "var" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java">Id</a> "=" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
 
-DecFuncao ::= “fun” ListId “=” Expressao
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/declaration/DecFuncao.java">DecFuncao</a> ::= "fun" ListId "=" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
 
-DecComposta ::= DeclaracaoFuncional “,” DeclaracaoFuncional
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecComposta.java">DecComposta</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DeclaracaoFuncional.java">DeclaracaoFuncional</a> "," <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DeclaracaoFuncional.java">DeclaracaoFuncional</a>
 
-ListId ::= Id | Id ListId
+ListId ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java">Id</a>
+         | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java">Id</a> ListId
 
-Aplicacao ::= Expressao “(“ ListExp “)”
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/Aplicacao.java">Aplicacao</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> "(" ListExp ")"
 
-ListExp ::= Expressao | Expressao “, “ ListExp
-```
+ListExp ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+          | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> "," ListExp
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/expression/IfThenElse.java">IfThenElse</a> ::= "if" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> "then" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> "else" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+</pre>
+
+### Mapeamento dos Componentes Sintáticos para as Classes Java
+
+| Construto / Regra BNF | Classe Java | Pacote | Descrição |
+| :--- | :--- | :--- | :--- |
+| `Programa` | [`Programa`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/Programa.java) | `lfp.plp.functional2` | Ponto de entrada do programa que encapsula a expressão raiz |
+| `Expressao` | [`Expressao`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java) | `lfp.plp.expressions2.expression` | Interface base para todas as expressões da linguagem |
+| `Valor` | [`Valor`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Valor.java) | `lfp.plp.expressions2.expression` | Interface que agrupa valores concretos e abstratos |
+| `ValorConcreto` | [`ValorConcreto`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorConcreto.java) | `lfp.plp.expressions2.expression` | Superclasse abstrata para valores primitivos |
+| `ValorAbstrato` | [`ValorAbstrato`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorAbstrato.java) | `lfp.plp.functional2.expression` | Interface para valores de alta ordem |
+| `ValorFuncao` | [`ValorFuncao`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorFuncao.java) | `lfp.plp.functional2.expression` | Representação de funções como valor (`fn ... . ...`) |
+| `ValorInteiro` | [`ValorInteiro`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorInteiro.java) | `lfp.plp.expressions2.expression` | Encapsula literais inteiros |
+| `ValorBooleano` | [`ValorBooleano`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorBooleano.java) | `lfp.plp.expressions2.expression` | Encapsula literais booleanos (`true`, `false`) |
+| `ValorString` | [`ValorString`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorString.java) | `lfp.plp.expressions2.expression` | Encapsula literais string |
+| `ExpUnaria` | [`ExpUnaria`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpUnaria.java) | `lfp.plp.expressions2.expression` | Superclasse para expressões unárias |
+| `"-" Expressao` | [`ExpMenos`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpMenos.java) | `lfp.plp.expressions2.expression` | Expressão de menos unário |
+| `"not" Expressao` | [`ExpNot`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpNot.java) | `lfp.plp.expressions2.expression` | Expressão de negação lógica |
+| `"length" Expressao` | [`ExpLength`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpLength.java) | `lfp.plp.expressions2.expression` | Expressão de tamanho de string |
+| `ExpBinaria` | [`ExpBinaria`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpBinaria.java) | `lfp.plp.expressions2.expression` | Superclasse para expressões binárias |
+| `Expressao "+" Expressao` | [`ExpSoma`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpSoma.java) | `lfp.plp.expressions2.expression` | Operação de adição |
+| `Expressao "-" Expressao` | [`ExpSub`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpSub.java) | `lfp.plp.expressions2.expression` | Operação de subtração |
+| `Expressao "and" Expressao` | [`ExpAnd`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpAnd.java) | `lfp.plp.expressions2.expression` | Conjunção lógica |
+| `Expressao "or" Expressao` | [`ExpOr`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpOr.java) | `lfp.plp.expressions2.expression` | Disjunção lógica |
+| `Expressao "==" Expressao` | [`ExpEquals`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpEquals.java) | `lfp.plp.expressions2.expression` | Comparação de igualdade |
+| `Expressao "++" Expressao` | [`ExpConcat`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpConcat.java) | `lfp.plp.expressions2.expression` | Concatenação de strings |
+| `Expressao "\|>" Expressao` | [`ExpPipeline`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpPipeline.java) | `lfp.plp.functional2.expression` | Forward Pipeline (1 argumento) |
+| `ListExp "\|>" Expressao` | [`ExpPipeline`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpPipeline.java) | `lfp.plp.functional2.expression` | Forward Pipeline (múltiplos argumentos) |
+| `Expressao ">>" Expressao` | [`ExpComposicao`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpComposicao.java) | `lfp.plp.functional2.expression` | Composição de funções |
+| `ExpDeclaracao` | [`ExpDeclaracao`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpDeclaracao.java) | `lfp.plp.functional2.expression` | Expressão de declaração local (`let ... in ...`) |
+| `DeclaracaoFuncional` | [`DeclaracaoFuncional`](PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DeclaracaoFuncional.java) | `lfp.plp.functional1.declaration` | Interface para declarações funcionais |
+| `DecVariavel` | [`DecVariavel`](PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecVariavel.java) | `lfp.plp.functional1.declaration` | Declaração de variável (`var id = exp`) |
+| `DecFuncao` | [`DecFuncao`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/declaration/DecFuncao.java) | `lfp.plp.functional2.declaration` | Declaração de função (`fun id params = exp`) |
+| `DecComposta` | [`DecComposta`](PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecComposta.java) | `lfp.plp.functional1.declaration` | Declaração composta separada por vírgula |
+| `Id` | [`Id`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java) | `lfp.plp.expressions2.expression` | Identificador na linguagem |
+| `Aplicacao` | [`Aplicacao`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/Aplicacao.java) | `lfp.plp.functional2.expression` | Aplicação/chamada de função |
+| `IfThenElse` | [`IfThenElse`](PLP-master/FuncionalPipeline/src/lfp/plp/functional1/expression/IfThenElse.java) | `lfp.plp.functional1.expression` | Expressão condicional if-then-else |
 
 ### Propriedades da Gramática:
 

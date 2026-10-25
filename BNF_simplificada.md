@@ -31,10 +31,8 @@ ExpBinaria ::= Expressao "+" Expressao
              | Expressao "==" Expressao
              | Expressao "++" Expressao
              | Expressao "|>" Expressao
-             | ArgumentosPipeline "|>" Expressao
+             | ListExp "|>" Expressao
              | Expressao ">>" Expressao
-
-ArgumentosPipeline ::= "(" ListExp ")"
 
 ExpDeclaracao ::= "let" DeclaracaoFuncional "in" Expressao
 
