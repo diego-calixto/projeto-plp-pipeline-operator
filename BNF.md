@@ -6,7 +6,8 @@
                 | ArgumentosPipeline "|>" ExpComposicao
                 | ExpComposicao
 
-    ArgumentosPipeline ::= "(" ListExp ")"
+    ArgumentosPipeline ::= ExpComposicao "," ExpComposicao
+                        | ArgumentosPipeline "," ExpComposicao
 
     ExpComposicao ::= ExpComposicao ">>" ExpBinaria
                     | ExpBinaria

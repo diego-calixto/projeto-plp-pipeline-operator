@@ -33,8 +33,8 @@ public final class Funcional2SyntaxTest {
 		assertEquals("a", ((Id) composedPipeline.getEsq()).getIdName());
 		assertComposition(composedPipeline.getDir(), "f", "g");
 
-		assertPipelineArguments("(a, b) |> f", "a", "b");
-		assertPipelineArguments("(a, b, c) |> f", "a", "b", "c");
+		assertPipelineArguments("a, b |> f", "a", "b");
+		assertPipelineArguments("a, b, c |> f", "a", "b", "c");
 		ExpPipeline groupedArgument = (ExpPipeline) parse("(a) |> f");
 		assertEquals("a", ((Id) groupedArgument.getEsq()).getIdName());
 		ExpPipeline groupedExpression =
@@ -45,12 +45,12 @@ public final class Funcional2SyntaxTest {
 					"Grouped expression was mistaken for pipeline arguments.");
 		}
 		ExpPipeline argumentsChained =
-				(ExpPipeline) parse("(a, b) |> f |> g");
+				(ExpPipeline) parse("a, b |> f |> g");
 		assertEquals("g", ((Id) argumentsChained.getDir()).getIdName());
 		assertPipelineArguments(argumentsChained.getEsq(), "a", "b");
 
 		ExpPipeline argumentsComposition =
-				(ExpPipeline) parse("(a, b) |> f >> g");
+				(ExpPipeline) parse("a, b |> f >> g");
 		assertEquals(2, argumentsComposition.getArgumentosEsquerda().size());
 		assertComposition(argumentsComposition.getDir(), "f", "g");
 
@@ -59,7 +59,7 @@ public final class Funcional2SyntaxTest {
 		parse("fn x . x");
 		parse("let var x = 1 in x");
 		parse("if true then 1 else 2");
-		assertRejected("a, b |> f");
+		assertRejected("(a, b) |> f");
 		System.out.println("Funcional2 syntax tests passed.");
 	}
 
@@ -109,7 +109,7 @@ public final class Funcional2SyntaxTest {
 			parse(source);
 			throw new AssertionError("Expected syntax rejection: " + source);
 		} catch (ParseException expected) {
-			// The comma is only valid within parenthesized pipeline arguments.
+			// Parenthesized comma expressions are not pipeline argument lists.
 		}
 	}
 

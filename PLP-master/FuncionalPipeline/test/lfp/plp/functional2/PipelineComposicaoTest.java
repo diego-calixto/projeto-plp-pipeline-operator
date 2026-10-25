@@ -212,7 +212,7 @@ public class PipelineComposicaoTest {
 
 	@Test
 	public void testPipelineComMultiplosArgumentos() throws Exception {
-		Programa prog = parse("let fun soma x y = x + y in (2, 3) |> soma");
+		Programa prog = parse("let fun soma x y = x + y in 2, 3 |> soma");
 		assertTrue(prog.checaTipo());
 		assertEquals(new ValorInteiro(5), prog.executar());
 	}
@@ -225,7 +225,7 @@ public class PipelineComposicaoTest {
 		assertFalse(chamadaDireta.checaTipo());
 
 		Programa chamadaPipeline = parse(
-				"let fun soma x y = x + y in (2, 3, 4) |> soma");
+				"let fun soma x y = x + y in 2, 3, 4 |> soma");
 		assertFalse(chamadaPipeline.checaTipo());
 	}
 
@@ -237,7 +237,7 @@ public class PipelineComposicaoTest {
 		assertFalse(chamadaDireta.checaTipo());
 
 		Programa chamadaPipeline = parse(
-				"let fun soma x y = x + y in (2, \"texto\") |> soma");
+				"let fun soma x y = x + y in 2, \"texto\" |> soma");
 		assertFalse(chamadaPipeline.checaTipo());
 	}
 

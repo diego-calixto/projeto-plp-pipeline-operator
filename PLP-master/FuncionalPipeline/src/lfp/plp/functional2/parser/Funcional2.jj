@@ -607,6 +607,27 @@ List PListaExpr() :
   }
 }
 
+List PListaArgumentosPipeline() :
+{
+  List retorno = new ArrayList();
+  Expressao expr;
+}
+{
+  expr = PExpComposicao()
+  {
+    retorno.add(expr);
+  }
+  (
+    < COMMA > expr = PExpComposicao()
+    {
+      retorno.add(expr);
+    }
+  )+
+  {
+    return retorno;
+  }
+}
+
 Expressao PExpUnaria() :
 {
   Expressao retorno;
@@ -738,8 +759,9 @@ Expressao PExpPipeline() :
 }
 {
   (
-    LOOKAHEAD(< LPAREN > PExpressao() < COMMA >)
-    < LPAREN > argumentos = PListaExpr() < RPAREN >
+    LOOKAHEAD(PExpComposicao() < COMMA > PExpComposicao()
+        ( < COMMA > PExpComposicao() )* < PIPELINE >)
+    argumentos = PListaArgumentosPipeline()
     < PIPELINE > param2 = PExpComposicao()
     {
       retorno = new ExpPipeline(argumentos, param2);
