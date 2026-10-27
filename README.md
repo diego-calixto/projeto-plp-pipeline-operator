@@ -1,4 +1,4 @@
-# Pipeline e Composição na Linguagem Funcional 2
+# Proposta de Projeto: Extensão da Linguagem Funcional 2 (LF2) com Operadores de Pipeline e Composição de Funções
 
 ## Disciplina
 
@@ -8,116 +8,200 @@ Paradigmas de Linguagens de Programação (PLP) — CIn/UFPE.
 
 Prof. Dr. Augusto Cezar Alves Sampaio.
 
-## Equipe
+## Alunos:
+* Diego Henrique Vilaça Calixto
+* Júlia Arnaud de Melo Fragoso
 
-- Diego Henrique Vilaça Calixto
-- Júlia Arnaud de Melo Fragoso
+## 1. Contexto
 
-## Contextualização
+A Linguagem Funcional 2 (LF2), utilizada como linguagem de estudo na disciplina de Paradigmas de Linguagens de Programação (PLP), disponibiliza suporte a funções como valores de primeira classe e funções de alta ordem. Contudo, a avaliação de chamadas de funções encadeadas na LF2 exige o aninhamento sucessivo de parênteses (por exemplo, `g(f(h(x)))`), o que prejudica a legibilidade e contrapõe o fluxo natural de transformação de dados.
 
-A Linguagem Funcional 2 (LF2) permite definir funções e utilizá-las como valores, mas chamadas encadeadas podem exigir vários níveis de parênteses, como `g(f(h(x)))`. Este projeto estende a LF2 com os operadores de pipeline (`|>`) e composição de funções (`>>`) para expressar transformações de dados da esquerda para a direita.
+Para resolver essa limitação, este projeto propõe a extensão da LF2 por meio da incorporação nativa de dois operadores funcionais: o operador de *forward pipeline* (`|>`) e o operador de composição de funções (`>>`). A inclusão dessas primitivas reduz o aninhamento sintático e alinha a LF2 às convenções de linguagens funcionais modernas (como Elixir, F# e OCaml), estabelecendo um fluxo de processamento explícito da esquerda para a direita (*left-to-right data flow*).
 
-O projeto parte da implementação de LF2 em Java disponível em [`PLP-master/FuncionalPipeline`](PLP-master/FuncionalPipeline) e mantém as construções existentes da linguagem, acrescentando parsing, representação na AST, checagem de tipos e avaliação para os novos operadores.
+O projeto parte da implementação de LF2 em Java disponível em [`PLP-master/FuncionalPipeline`](PLP-master/FuncionalPipeline) e mantém as construções existentes da linguagem, acrescentando parsing, representação na AST, checagem de tipos e avaliação para os novos operadores. A gramática também permite passar um ou vários argumentos posicionais à função no lado direito do pipeline.
 
-## Funcionalidades
+## 2. Objetivos
 
-- **Pipeline (`|>`)**: aplica uma função aos argumentos escritos à esquerda. Aceita um ou vários argumentos, sem exigir parênteses na lista do pipeline.
-- **Composição (`>>`)**: compõe duas funções da esquerda para a direita; `f >> g` representa uma função que aplica primeiro `f` e depois `g`.
-- **Encadeamento**: ambos os operadores são associativos à esquerda.
-- **Precedência**: a aplicação e as operações aritméticas, lógicas e de comparação têm precedência maior que a composição; a composição tem precedência maior que o pipeline.
-- **Checagem estática**: valida se o lado direito do pipeline é uma função e se seus parâmetros correspondem em quantidade e tipo aos argumentos fornecidos. A composição também verifica a compatibilidade das funções.
-- **Compatibilidade com LF2**: preserva construções como declarações `let`, funções nomeadas, funções anônimas, chamadas tradicionais, condicionais, expressões aritméticas e booleanas e operações com strings.
+### Objetivo Geral
 
-## Sintaxe dos operadores
+O objetivo geral deste projeto é estender o compilador/interpretador da Linguagem Funcional 2 (LF2), contemplando sua gramática, árvore de sintaxe abstrata (AST), sistema de verificação estática de tipos e semântica operacional, de modo a prover suporte aos operadores de *pipeline* (`|>`) e composição funcional (`>>`).
+
+### Objetivos Específicos
+
+- Atualizar a especificação sintática formal em BNF da LF2, definindo a precedência gramatical e a associatividade à esquerda para os operadores `|>` e `>>`.
+- Expandir a AST e a etapa de *parsing* da linguagem para representar adequadamente as novas construções sintáticas.
+- Implementar regras formais de inferência e checagem estática de tipos para ambos os operadores no módulo de verificação de tipos (`checaTipo` / `getTipo`), garantindo o tratamento de exceções de incompatibilidade de tipos.
+- Implementar a execução dos operadores no interpretador (`avaliar`), tratando `x |> f` como a aplicação de `f` a `x` e `x, y |> f` como a aplicação de `f` a `x` e `y`; `f >> g` cria uma função que aplica primeiro `f` e depois `g`, reaproveitando a estrutura de execução já existente na LF2.
+- Construir uma suíte de testes unitários e de integração cobrindo casos válidos de encadeamento com tipos primitivos e funções de alta ordem, além de cenários de erro de tipagem.
+
+## 3. Escopo
+
+### Incluído
+
+- **Modificações Gramaticais e Parsing:** Suporte aos símbolos `|>` e `>>` na análise léxica e sintática.
+- **Pipeline com múltiplos argumentos:** Aplicação de funções com um ou vários argumentos posicionais à esquerda do operador, por exemplo `x |> f` e `x, y |> f`, com validação da quantidade e dos tipos dos argumentos.
+- **Associatividade e Precedência:** Definição de associatividade à esquerda para ambos os operadores. A hierarquia de precedência garantirá que a composição de funções (`>>`) tenha maior precedência que o *pipeline* (`|>`), permitindo a interpretação direta da expressão `x |> f >> g` como `x |> (f >> g)`.
+- **Verificação Estática de Tipos:**
+    - Para `e1 |> e2`: Validação de que `e1` possui tipo $T_1$ e `e2` possui tipo $T_1 \rightarrow T_2$, resultando no tipo $T_2$.
+    - Para `e1 >> e2`: Validação de que `e1` possui tipo $T_1 \rightarrow T_2$ e `e2` possui tipo $T_2 \rightarrow T_3$, resultando no tipo $T_1 \rightarrow T_3$.
+    - Lançamento de exceção de tipagem (`TiposIncompativeisException`) ao detectar inconsistência entre os tipos de entrada e saída.
+- **Semântica Operacional de Avaliação:**
+    - Avaliação do operador `|>` via aplicação do valor resultante de `e1` à função `e2`.
+    - Avaliação do operador `>>` gerando uma nova estrutura de `ValorFuncao` que representa $\lambda x . e_2(e_1(x))$, mantendo o ambiente de execução (*closure*) preservado.
+- **Infraestrutura de Testes:** Bateria de testes automatizados para validação do pipeline de execução.
+
+### Não Incluído
+
+- Suporte a *placeholders* e aplicação parcial em funções (e.g., `x |> f(a, _, b)`). O pipeline aceita vários argumentos posicionais, mas não permite omitir argumentos.
+- Avaliação preguiçosa (*lazy evaluation*).
+- Adição de novos tipos de dados estruturados não previstos na LF2 original (como tuplas, registros ou monadas).
+- Operadores de direção oposta, como *backward pipeline* (`<|`) ou composição reversa (`<<`).
+
+## 4. Especificação Sintática (BNF)
+
+A BNF abaixo é uma versão simplificada, apresentada para fins didáticos e de demonstração, com links para as classes Java correspondentes. Por ser um resumo, ela não demonstra detalhes importantes da implementação, como a precedência e a associatividade dos operadores nem a forma específica da lista de argumentos no pipeline. A especificação detalhada desses aspectos está em [`BNF.md`](BNF.md).
+
+### BNF simplificada
+
+<pre>
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/Programa.java">Programa</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Valor.java">Valor</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpUnaria.java">ExpUnaria</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpBinaria.java">ExpBinaria</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpDeclaracao.java">ExpDeclaracao</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java">Id</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/Aplicacao.java">Aplicacao</a>
+            | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/expression/IfThenElse.java">IfThenElse</a>
+            | "(" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> ")"
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Valor.java">Valor</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorConcreto.java">ValorConcreto</a>
+        | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorAbstrato.java">ValorAbstrato</a>
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorAbstrato.java">ValorAbstrato</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorFuncao.java">ValorFuncao</a>
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorConcreto.java">ValorConcreto</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorInteiro.java">ValorInteiro</a>
+                | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorBooleano.java">ValorBooleano</a>
+                | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorString.java">ValorString</a>
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorFuncao.java">ValorFuncao</a> ::= "fn" ListId "." <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpUnaria.java">ExpUnaria</a> ::= "-" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+            | "not" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+            | "length" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpBinaria.java">ExpBinaria</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpSoma.java">Expressao "+" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpSub.java">Expressao "-" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpAnd.java">Expressao "and" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpOr.java">Expressao "or" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpEquals.java">Expressao "==" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpConcat.java">Expressao "++" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpPipeline.java">Expressao "|>" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpPipeline.java">ListExp "|>" Expressao</a>
+             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpComposicao.java">Expressao ">>" Expressao</a>
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpDeclaracao.java">ExpDeclaracao</a> ::= "let" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DeclaracaoFuncional.java">DeclaracaoFuncional</a> "in" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DeclaracaoFuncional.java">DeclaracaoFuncional</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecVariavel.java">DecVariavel</a>
+                      | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/declaration/DecFuncao.java">DecFuncao</a>
+                      | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecComposta.java">DecComposta</a>
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecVariavel.java">DecVariavel</a> ::= "var" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java">Id</a> "=" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/declaration/DecFuncao.java">DecFuncao</a> ::= "fun" ListId "=" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecComposta.java">DecComposta</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DeclaracaoFuncional.java">DeclaracaoFuncional</a> "," <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DeclaracaoFuncional.java">DeclaracaoFuncional</a>
+
+ListId ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java">Id</a>
+         | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java">Id</a> ListId
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/Aplicacao.java">Aplicacao</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> "(" ListExp ")"
+
+ListExp ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+          | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> "," ListExp
+
+<a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/expression/IfThenElse.java">IfThenElse</a> ::= "if" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> "then" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> "else" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a>
+</pre>
+
+### Exemplos de sintaxe e semântica
+
+**Pipeline com um argumento:** o valor à esquerda é passado como argumento para a função à direita.
 
 ```text
-Expressao       ::= ExpPipeline
-ExpPipeline     ::= ExpPipeline "|>" ExpComposicao
-                  | ArgumentosPipeline "|>" ExpComposicao
-                  | ExpComposicao
-ArgumentosPipeline ::= ExpComposicao "," ExpComposicao
-                     | ArgumentosPipeline "," ExpComposicao
-ExpComposicao   ::= ExpComposicao ">>" ExpBinaria
-                  | ExpBinaria
+let fun incrementa x = x + 1 in 5 |> incrementa
 ```
 
-As regras completas da linguagem estão em [`BNF.md`](BNF.md), [`BNF_simplificada.md`](BNF_simplificada.md) e [`PLP-master/FuncionalPipeline/src/lfp/plp/functional2/parser/Funcional2.jj`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/parser/Funcional2.jj).
+Isso equivale à aplicação direta `incrementa(5)` e resulta em `6`.
 
-### Pipeline com um argumento
+**Pipeline com múltiplos argumentos:** os argumentos são escritos em sequência, separados por vírgulas e sem parênteses.
 
 ```text
-let fun incrementa x = x + 1 in
-5 |> incrementa
+let fun soma x y = x + y in 2, 3 |> soma
 ```
 
-O resultado é `6`, equivalente a `incrementa(5)`.
+Isso equivale à aplicação direta `soma(2, 3)` e resulta em `5`. O pipeline aplica a função aos argumentos na ordem em que aparecem; a quantidade e os tipos precisam corresponder à assinatura da função.
 
-### Pipeline com vários argumentos
+**Pipeline encadeado:** cada resultado é passado à próxima função.
 
 ```text
-let fun soma x y = x + y in
-2, 3 |> soma
+let fun incrementa x = x + 1, fun dobro x = x + x
+in 5 |> incrementa |> dobro
 ```
 
-O resultado é `5`, equivalente à chamada tradicional `soma(2, 3)`. A lista de argumentos do pipeline é separada por vírgulas, sem envolver a lista em parênteses: `(2, 3) |> soma` não é a sintaxe aceita.
+O resultado é `12`, equivalente a `dobro(incrementa(5))`.
 
-### Encadeamento e composição
+**Composição funcional:** `f >> g` cria uma função que primeiro aplica `f` e depois `g`. A composição implementada aceita funções unárias.
 
 ```text
-let fun incrementa x = x + 1,
-    fun dobro x = x + x
+let fun incrementa x = x + 1, fun dobro x = x + x
 in 5 |> incrementa >> dobro
 ```
 
-Como `>>` tem precedência maior que `|>`, a expressão aplica a composição `incrementa >> dobro` ao valor `5`: primeiro incrementa, depois dobra. O resultado é `12`.
+Como a composição tem precedência maior que o pipeline, essa expressão aplica a função composta a `5` e resulta em `12` (`dobro(incrementa(5))`).
 
-O encadeamento `5 |> incrementa |> dobro` também é válido e, por associatividade à esquerda, equivale a `(5 |> incrementa) |> dobro`.
+**Formas inválidas:**
 
-## Execução
+- `(2, 3) |> soma` é sintaticamente inválida: a lista de argumentos do pipeline não deve ser envolvida por parênteses.
+- `2, 3 |> incrementa` é sintaticamente válida, mas falha na checagem de tipos porque `incrementa` recebe apenas um argumento.
+- `5 |> 10` também é sintaticamente válida, mas falha na checagem de tipos porque o lado direito do pipeline precisa ser uma função.
 
-### Requisitos
+### Mapeamento dos Componentes Sintáticos para as Classes Java
 
-- Java 8 ou superior.
-- Apache Maven.
+| Construto / Regra BNF | Classe Java | Pacote | Descrição |
+| :--- | :--- | :--- | :--- |
+| `Programa` | [`Programa`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/Programa.java) | `lfp.plp.functional2` | Ponto de entrada do programa que encapsula a expressão raiz |
+| `Expressao` | [`Expressao`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java) | `lfp.plp.expressions2.expression` | Interface base para todas as expressões da linguagem |
+| `Valor` | [`Valor`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Valor.java) | `lfp.plp.expressions2.expression` | Interface que agrupa valores concretos e abstratos |
+| `ValorConcreto` | [`ValorConcreto`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorConcreto.java) | `lfp.plp.expressions2.expression` | Superclasse abstrata para valores primitivos |
+| `ValorAbstrato` | [`ValorAbstrato`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorAbstrato.java) | `lfp.plp.functional2.expression` | Interface para valores de alta ordem |
+| `ValorFuncao` | [`ValorFuncao`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorFuncao.java) | `lfp.plp.functional2.expression` | Representação de funções como valor (`fn ... . ...`) |
+| `ValorInteiro` | [`ValorInteiro`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorInteiro.java) | `lfp.plp.expressions2.expression` | Encapsula literais inteiros |
+| `ValorBooleano` | [`ValorBooleano`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorBooleano.java) | `lfp.plp.expressions2.expression` | Encapsula literais booleanos (`true`, `false`) |
+| `ValorString` | [`ValorString`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorString.java) | `lfp.plp.expressions2.expression` | Encapsula literais string |
+| `ExpUnaria` | [`ExpUnaria`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpUnaria.java) | `lfp.plp.expressions2.expression` | Superclasse para expressões unárias |
+| `"-" Expressao` | [`ExpMenos`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpMenos.java) | `lfp.plp.expressions2.expression` | Expressão de menos unário |
+| `"not" Expressao` | [`ExpNot`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpNot.java) | `lfp.plp.expressions2.expression` | Expressão de negação lógica |
+| `"length" Expressao` | [`ExpLength`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpLength.java) | `lfp.plp.expressions2.expression` | Expressão de tamanho de string |
+| `ExpBinaria` | [`ExpBinaria`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpBinaria.java) | `lfp.plp.expressions2.expression` | Superclasse para expressões binárias |
+| `Expressao "+" Expressao` | [`ExpSoma`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpSoma.java) | `lfp.plp.expressions2.expression` | Operação de adição |
+| `Expressao "-" Expressao` | [`ExpSub`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpSub.java) | `lfp.plp.expressions2.expression` | Operação de subtração |
+| `Expressao "and" Expressao` | [`ExpAnd`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpAnd.java) | `lfp.plp.expressions2.expression` | Conjunção lógica |
+| `Expressao "or" Expressao` | [`ExpOr`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpOr.java) | `lfp.plp.expressions2.expression` | Disjunção lógica |
+| `Expressao "==" Expressao` | [`ExpEquals`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpEquals.java) | `lfp.plp.expressions2.expression` | Comparação de igualdade |
+| `Expressao "++" Expressao` | [`ExpConcat`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ExpConcat.java) | `lfp.plp.expressions2.expression` | Concatenação de strings |
+| `Expressao "\|>" Expressao` | [`ExpPipeline`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpPipeline.java) | `lfp.plp.functional2.expression` | Forward pipeline com um argumento |
+| `ListExp "\|>" Expressao` | [`ExpPipeline`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpPipeline.java) | `lfp.plp.functional2.expression` | Forward pipeline com múltiplos argumentos posicionais separados por vírgulas, sem parênteses |
+| `Expressao ">>" Expressao` | [`ExpComposicao`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpComposicao.java) | `lfp.plp.functional2.expression` | Composição de funções unárias |
+| `ExpDeclaracao` | [`ExpDeclaracao`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpDeclaracao.java) | `lfp.plp.functional2.expression` | Expressão de declaração local (`let ... in ...`) |
+| `DeclaracaoFuncional` | [`DeclaracaoFuncional`](PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DeclaracaoFuncional.java) | `lfp.plp.functional1.declaration` | Interface para declarações funcionais |
+| `DecVariavel` | [`DecVariavel`](PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecVariavel.java) | `lfp.plp.functional1.declaration` | Declaração de variável (`var id = exp`) |
+| `DecFuncao` | [`DecFuncao`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/declaration/DecFuncao.java) | `lfp.plp.functional2.declaration` | Declaração de função (`fun id params = exp`) |
+| `DecComposta` | [`DecComposta`](PLP-master/FuncionalPipeline/src/lfp/plp/functional1/declaration/DecComposta.java) | `lfp.plp.functional1.declaration` | Declaração composta separada por vírgula |
+| `Id` | [`Id`](PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java) | `lfp.plp.expressions2.expression` | Identificador na linguagem |
+| `Aplicacao` | [`Aplicacao`](PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/Aplicacao.java) | `lfp.plp.functional2.expression` | Aplicação/chamada de função |
+| `IfThenElse` | [`IfThenElse`](PLP-master/FuncionalPipeline/src/lfp/plp/functional1/expression/IfThenElse.java) | `lfp.plp.functional1.expression` | Expressão condicional if-then-else |
 
-### Executar os testes
+### Precedência e associatividade da implementação
 
-Na raiz do repositório:
-
-```bash
-mvn -f PLP-master/FuncionalPipeline/pom.xml test
-```
-
-### Executar o interpretador
-
-Entre no diretório do módulo e execute o programa de exemplo padrão (`input`):
-
-```bash
-cd PLP-master/FuncionalPipeline
-mvn clean generate-sources compile exec:java
-```
-
-O parser lê o arquivo `input`, verifica os tipos e avalia a expressão, imprimindo o resultado no terminal. Para usar outro arquivo de entrada, informe seu caminho ao executar a classe principal `lfp.plp.functional2.parser.Func2Parser`.
-
-Por exemplo, ainda dentro do diretório do módulo, para executar `input2`:
-
-```bash
-mvn exec:java -Dexec.args="input2"
-```
-
-## Estrutura do módulo
-
-| Caminho | Responsabilidade |
-|---|---|
-| `PLP-master/FuncionalPipeline/src/lfp/plp/functional2/parser/Funcional2.jj` | Gramática JavaCC e construção da AST durante o parsing |
-| `PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpPipeline.java` | AST, checagem de tipos e avaliação do pipeline |
-| `PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ExpComposicao.java` | AST, checagem de tipos e avaliação da composição |
-| `PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/Aplicacao.java` | Aplicação de funções e validação de aridade |
-| `PLP-master/FuncionalPipeline/test/lfp/plp/functional2/` | Testes de integração dos operadores e da linguagem |
-| `PLP-master/FuncionalPipeline/input` | Programa de exemplo usado por padrão pelo interpretador |
-
-## Limitações
-
-- O pipeline aceita múltiplos argumentos posicionais; não há suporte a placeholders nem aplicação parcial.
-- A composição `>>` é implementada para funções unárias.
-- Não são introduzidos novos tipos de dados nem avaliação preguiçosa.
+1. **Associatividade à Esquerda:** Expressões como `x |> f |> g` e `f >> g >> h` são agrupadas como `((x |> f) |> g)` e `((f >> g) >> h)`, respectivamente.
+2. **Precedência Relativa:** A composição `f >> g` tem precedência maior que o pipeline. Assim, `x |> f >> g` é interpretado como `x |> (f >> g)`. A especificação gramatical detalhada está em [`BNF.md`](BNF.md); a BNF simplificada acima não representa essas propriedades.
