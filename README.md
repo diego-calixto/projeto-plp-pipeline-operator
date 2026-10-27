@@ -36,26 +36,7 @@ O objetivo geral deste projeto é estender o compilador/interpretador da Linguag
 
 ## 3. Escopo
 
-### Incluído
-
-- **Modificações Gramaticais e Parsing:** Suporte aos símbolos `|>` e `>>` na análise léxica e sintática.
-- **Pipeline com múltiplos argumentos:** Aplicação de funções com um ou vários argumentos posicionais à esquerda do operador, por exemplo `x |> f` e `x, y |> f`, com validação da quantidade e dos tipos dos argumentos.
-- **Associatividade e Precedência:** Definição de associatividade à esquerda para ambos os operadores. A hierarquia de precedência garantirá que a composição de funções (`>>`) tenha maior precedência que o *pipeline* (`|>`), permitindo a interpretação direta da expressão `x |> f >> g` como `x |> (f >> g)`.
-- **Verificação Estática de Tipos:**
-    - Para `e1 |> e2`: Validação de que `e1` possui tipo $T_1$ e `e2` possui tipo $T_1 \rightarrow T_2$, resultando no tipo $T_2$.
-    - Para `e1 >> e2`: Validação de que `e1` possui tipo $T_1 \rightarrow T_2$ e `e2` possui tipo $T_2 \rightarrow T_3$, resultando no tipo $T_1 \rightarrow T_3$.
-    - Lançamento de exceção de tipagem (`TiposIncompativeisException`) ao detectar inconsistência entre os tipos de entrada e saída.
-- **Semântica Operacional de Avaliação:**
-    - Avaliação do operador `|>` via aplicação do valor resultante de `e1` à função `e2`.
-    - Avaliação do operador `>>` gerando uma nova estrutura de `ValorFuncao` que representa $\lambda x . e_2(e_1(x))$, mantendo o ambiente de execução (*closure*) preservado.
-- **Infraestrutura de Testes:** Bateria de testes automatizados para validação do pipeline de execução.
-
-### Não Incluído
-
-- Suporte a *placeholders* e aplicação parcial em funções (e.g., `x |> f(a, _, b)`). O pipeline aceita vários argumentos posicionais, mas não permite omitir argumentos.
-- Avaliação preguiçosa (*lazy evaluation*).
-- Adição de novos tipos de dados estruturados não previstos na LF2 original (como tuplas, registros ou monadas).
-- Operadores de direção oposta, como *backward pipeline* (`<|`) ou composição reversa (`<<`).
+O escopo deste projeto abrange a inclusão dos operadores de pipeline (|>) e composição de funções (>>) na análise léxica, sintática e semântica da linguagem, garantindo associatividade à esquerda, suporte a múltiplos argumentos posicionais e maior precedência para a composição, o que permite a correta interpretação da expressão x |> f >> g como x |> (f >> g). O trabalho contempla a verificação estática de tipos com o disparo da exceção TiposIncompativeisException, a implementação da semântica operacional com preservação do ambiente de execução (closure), e a criação de uma bateria de testes automatizados; em contrapartida, ficam expressamente fora do escopo o suporte a placeholders, a aplicação parcial, a avaliação preguiçosa (lazy evaluation), novos tipos de dados estruturados e operadores em direção oposta (<| e <<).
 
 ## 4. Especificação Sintática (BNF)
 
