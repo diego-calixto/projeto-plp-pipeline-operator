@@ -3,7 +3,7 @@ layout: linguagem
 permalink: /linguagens/imperativa2
 linguagem: Imperativa 2
 short: Imp2
-order: 7
+order: 8
 ---
 
 

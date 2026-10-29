@@ -3,7 +3,7 @@ layout: linguagem
 permalink: /linguagens/funcional3
 linguagem: Funcional 3
 short: Func3
-order: 5
+order: 6
 ---
 
 * Estende a Linguagem Funcional 2 com listas e compreensão de listas
