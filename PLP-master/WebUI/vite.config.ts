@@ -3,8 +3,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 // The built app is published inside the Jekyll site, under <site baseurl>/ide/
-// (see .github/workflows/docs.yml). Set WEBUI_BASE to publish it elsewhere.
-const buildBase = process.env.WEBUI_BASE ?? "/PLP/ide/";
+// (see .github/workflows/deploy-pages.yml). Set WEBUI_BASE to publish it elsewhere.
+const buildBase = process.env.WEBUI_BASE ?? "/projeto-plp-pipeline-operator/ide/";
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({

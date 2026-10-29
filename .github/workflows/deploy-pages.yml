@@ -1,0 +1,92 @@
+name: "Build, Generate docs, and Deploy"
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build Java modules and WebAPI with Maven
+        working-directory: PLP-master
+        run: mvn -Dversion=${{ github.ref_name }} package -DskipTests
+
+      - name: Copy the classic UI to docs/
+        working-directory: PLP-master
+        run: |
+          cp AppUI/target/classes/index.html docs/interpretador.html
+          cp AppUI/target/javascript/classes.js* docs/
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: PLP-master/WebUI/package-lock.json
+
+      - name: Build the web IDE (WebUI)
+        working-directory: PLP-master/WebUI
+        run: |
+          # Publish under <Pages base path>/ide/; falls back to the default in vite.config.ts
+          base_path="${{ steps.pages.outputs.base_path }}"
+          if [ -n "$base_path" ]; then
+            export WEBUI_BASE="${base_path%/}/ide/"
+          fi
+          # plp.js is the WebAPI module compiled to JS by TeaVM
+          cp -r ../WebAPI/target/javascript/. public/
+          npm install --no-audit --no-fund
+          npm run build
+
+      - name: Copy the web IDE to docs/ide/
+        working-directory: PLP-master
+        run: |
+          mkdir -p docs/ide
+          cp -r WebUI/dist/. docs/ide/
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./PLP-master/docs/
+          destination: ./PLP-master/docs/_site
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./PLP-master/docs/_site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
