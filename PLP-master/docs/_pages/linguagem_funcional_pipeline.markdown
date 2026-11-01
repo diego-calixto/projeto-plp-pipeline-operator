@@ -103,6 +103,8 @@ IfThenElse ::= "if" {% include code-link.html path="FuncionalPipeline/src/lfp/pl
 ## Exemplos de Sintaxe e Semântica
 
 ### Pipeline com um argumento
+<a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun incrementa x = x + 1 in 5 |> incrementa' | url_encode }}">Abrir este exemplo na IDE web</a>
+
 O valor à esquerda é passado como argumento para a função à direita:
 
 ```text
@@ -112,6 +114,8 @@ let fun incrementa x = x + 1 in 5 |> incrementa
 Isso equivale à aplicação direta `incrementa(5)` e resulta em `6`.
 
 ### Pipeline com múltiplos argumentos
+<a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun soma x y = x + y in 2, 3 |> soma' | url_encode }}">Abrir este exemplo na IDE web</a>
+
 Os argumentos são escritos em sequência, separados por vírgulas e sem parênteses:
 
 ```text
@@ -121,6 +125,8 @@ let fun soma x y = x + y in 2, 3 |> soma
 Isso equivale à aplicação direta `soma(2, 3)` e resulta em `5`. O pipeline aplica a função aos argumentos na ordem em que aparecem; a quantidade e os tipos precisam corresponder à assinatura da função.
 
 ### Pipeline encadeado
+<a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun incrementa x = x + 1, fun dobro x = x + x in 5 |> incrementa |> dobro' | url_encode }}">Abrir este exemplo na IDE web</a>
+
 Cada resultado é passado sequencialmente à próxima função:
 
 ```text
@@ -131,6 +137,8 @@ in 5 |> incrementa |> dobro
 O resultado é `12`, equivalente a `dobro(incrementa(5))`.
 
 ### Composição funcional
+<a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun incrementa x = x + 1, fun dobro x = x + x in 5 |> incrementa >> dobro' | url_encode }}">Abrir este exemplo na IDE web</a>
+
 `f >> g` cria uma função que primeiro aplica `f` e depois `g`. A composição implementada aceita funções unárias:
 
 ```text
