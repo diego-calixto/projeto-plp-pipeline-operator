@@ -40,7 +40,6 @@
  *                        | <ExpFuncao>
  *                        | <IfThenElse>
  *                        | <ExpDeclaracao>
- *                        | "(" <Expressao> ")"
  * <ExpFuncao>          ::= "fn" <Id>+ ( "=>" | "." ) <Expressao>
  * <ValorPrimitivo>     ::= <ValorInteiro> | <ValorBooleano> | <ValorString>
  * <IfThenElse>         ::= "if" <Expressao> "then" <Expressao> "else" <Expressao>
@@ -60,7 +59,7 @@
  * ExpMultiplicativa   -> ExpUnaria ( ( "*" | "/" | "%" ) ExpUnaria )*
  * ExpUnaria           -> ( "-" | "not" | "length" ) ExpUnaria | ExpAplicacao
  * ExpAplicacao        -> ExpPrimaria ( "(" [ Expressao ( "," Expressao )* ] ")" )*
- * ExpPrimaria         -> ExpFuncao | ValorPrimitivo | IfThenElse | ExpDeclaracao | <ID> | "(" Expressao ")"
+ * ExpPrimaria         -> ExpFuncao | ValorPrimitivo | IfThenElse | ExpDeclaracao | <ID>
  * ExpFuncao           -> "fn" ( <ID> )+ ( "=>" | "." ) Expressao
  * ValorPrimitivo      -> <INTEGER_LITERAL> | "true" | "false" | <STRING_LITERAL>
  * IfThenElse          -> "if" Expressao "then" Expressao "else" Expressao
@@ -258,7 +257,7 @@ void ExpUnaria() : {}
 | ExpAplicacao()
 }
 
-// Aplicacao de Funcao: f(x), (fn x => x + 1)(10), f(x, y), curried calls f(x)(y)
+// Aplicacao de Funcao: f(x), f(x, y), curried calls f(x)(y)
 void ExpAplicacao() : {}
 {
   ExpPrimaria() ( LOOKAHEAD(1) <LPAREN> [ Expressao() ( <COMMA> Expressao() )* ] <RPAREN> )*
@@ -272,7 +271,6 @@ void ExpPrimaria() : {}
 | IfThenElse()
 | ExpDeclaracao()
 | <IDENTIFIER>
-| <LPAREN> Expressao() <RPAREN>
 }
 
 // Abstracao Funcional: fn x => expr ou fn x y => expr (tambem aceita notacao com ponto '.')

@@ -451,7 +451,6 @@ Expressao PExpPrimaria() :
   | LOOKAHEAD(PId() < LPAREN >)
     retorno = PAplicacao()
   | retorno = PId()
-  | < LPAREN > retorno = PExpressao() < RPAREN >
   )
   {
     return retorno;

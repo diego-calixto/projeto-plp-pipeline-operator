@@ -54,7 +54,6 @@ A BNF abaixo é uma versão simplificada, apresentada para fins didáticos e de 
             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java">Id</a>
             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/Aplicacao.java">Aplicacao</a>
             | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional1/expression/IfThenElse.java">IfThenElse</a>
-            | "(" <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java">Expressao</a> ")"
 
 <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/Valor.java">Valor</a> ::= <a href="PLP-master/FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorConcreto.java">ValorConcreto</a>
         | <a href="PLP-master/FuncionalPipeline/src/lfp/plp/functional2/expression/ValorAbstrato.java">ValorAbstrato</a>

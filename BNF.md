@@ -28,7 +28,6 @@
                 | Aplicacao
                 | ExpDeclaracao
                 | IfThenElse
-                | "(" Expressao ")"
 
     Valor ::= ValorConcreto
             | ValorAbstrato

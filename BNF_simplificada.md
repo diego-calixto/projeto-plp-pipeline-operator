@@ -7,7 +7,6 @@ Expressao ::= Valor
             | Id
             | Aplicacao
             | IfThenElse
-            | "(" Expressao ")"
 
 Valor ::= ValorConcreto
         | ValorAbstrato

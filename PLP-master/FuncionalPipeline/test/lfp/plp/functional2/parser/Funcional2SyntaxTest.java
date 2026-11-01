@@ -5,7 +5,6 @@ import java.util.List;
 
 import lfp.plp.expressions2.expression.Expressao;
 import lfp.plp.expressions2.expression.Id;
-import lfp.plp.expressions2.expression.ExpSoma;
 import lfp.plp.functional2.Programa;
 import lfp.plp.functional2.expression.ExpComposicao;
 import lfp.plp.functional2.expression.ExpPipeline;
@@ -35,15 +34,6 @@ public final class Funcional2SyntaxTest {
 
 		assertPipelineArguments("a, b |> f", "a", "b");
 		assertPipelineArguments("a, b, c |> f", "a", "b", "c");
-		ExpPipeline groupedArgument = (ExpPipeline) parse("(a) |> f");
-		assertEquals("a", ((Id) groupedArgument.getEsq()).getIdName());
-		ExpPipeline groupedExpression =
-				(ExpPipeline) parse("(a + b) |> f");
-		if (!(groupedExpression.getEsq() instanceof ExpSoma)
-				|| groupedExpression.getArgumentosEsquerda() != null) {
-			throw new AssertionError(
-					"Grouped expression was mistaken for pipeline arguments.");
-		}
 		ExpPipeline argumentsChained =
 				(ExpPipeline) parse("a, b |> f |> g");
 		assertEquals("g", ((Id) argumentsChained.getDir()).getIdName());
@@ -59,6 +49,8 @@ public final class Funcional2SyntaxTest {
 		parse("fn x . x");
 		parse("let var x = 1 in x");
 		parse("if true then 1 else 2");
+		assertRejected("(a)");
+		assertRejected("(a + b) |> f");
 		assertRejected("(a, b) |> f");
 		System.out.println("Funcional2 syntax tests passed.");
 	}
@@ -109,7 +101,7 @@ public final class Funcional2SyntaxTest {
 			parse(source);
 			throw new AssertionError("Expected syntax rejection: " + source);
 		} catch (ParseException expected) {
-			// Parenthesized comma expressions are not pipeline argument lists.
+			// The source expression is not part of the language grammar.
 		}
 	}
 
