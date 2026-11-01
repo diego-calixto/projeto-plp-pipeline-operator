@@ -102,8 +102,7 @@ IfThenElse ::= "if" {% include code-link.html path="FuncionalPipeline/src/lfp/pl
 
 ## Exemplos de Sintaxe e Semântica
 
-### Pipeline com um argumento
-<a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun incrementa x = x + 1 in 5 |> incrementa' | url_encode }}">Abrir este exemplo na IDE web</a>
+### <a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun incrementa x = x + 1 in 5 |> incrementa' | url_encode }}">Pipeline com um argumento</a>
 
 O valor à esquerda é passado como argumento para a função à direita:
 
@@ -113,8 +112,7 @@ let fun incrementa x = x + 1 in 5 |> incrementa
 
 Isso equivale à aplicação direta `incrementa(5)` e resulta em `6`.
 
-### Pipeline com múltiplos argumentos
-<a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun soma x y = x + y in 2, 3 |> soma' | url_encode }}">Abrir este exemplo na IDE web</a>
+### <a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun soma x y = x + y in 2, 3 |> soma' | url_encode }}">Pipeline com múltiplos argumentos</a>
 
 Os argumentos são escritos em sequência, separados por vírgulas e sem parênteses:
 
@@ -124,8 +122,7 @@ let fun soma x y = x + y in 2, 3 |> soma
 
 Isso equivale à aplicação direta `soma(2, 3)` e resulta em `5`. O pipeline aplica a função aos argumentos na ordem em que aparecem; a quantidade e os tipos precisam corresponder à assinatura da função.
 
-### Pipeline encadeado
-<a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun incrementa x = x + 1, fun dobro x = x + x in 5 |> incrementa |> dobro' | url_encode }}">Abrir este exemplo na IDE web</a>
+### <a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun incrementa x = x + 1, fun dobro x = x + x in 5 |> incrementa |> dobro' | url_encode }}">Pipeline encadeado</a>
 
 Cada resultado é passado sequencialmente à próxima função:
 
@@ -136,8 +133,7 @@ in 5 |> incrementa |> dobro
 
 O resultado é `12`, equivalente a `dobro(incrementa(5))`.
 
-### Composição funcional
-<a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun incrementa x = x + 1, fun dobro x = x + x in 5 |> incrementa >> dobro' | url_encode }}">Abrir este exemplo na IDE web</a>
+### <a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun incrementa x = x + 1, fun dobro x = x + x in 5 |> incrementa >> dobro' | url_encode }}">Composição funcional</a>
 
 `f >> g` cria uma função que primeiro aplica `f` e depois `g`. A composição implementada aceita funções unárias:
 
@@ -145,13 +141,48 @@ O resultado é `12`, equivalente a `dobro(incrementa(5))`.
 let fun incrementa x = x + 1, fun dobro x = x + x
 in 5 |> incrementa >> dobro
 ```
-
 Como a composição tem precedência maior que o pipeline, essa expressão aplica a função composta a `5` e resulta em `12` (`dobro(incrementa(5))`).
+
+### <a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun tamanho s = length s, fun dobro n = n + n in "abc" |> tamanho >> dobro' | url_encode }}">Composição entre funções com tipos diferentes</a>
+
+A composição exige que o tipo retornado pela primeira função seja compatível com o argumento da segunda. `tamanho` transforma uma string em inteiro; `dobro` recebe um inteiro e retorna outro. Assim, `"abc" |> tamanho >> dobro` resulta em `6`.
+
+```text
+let fun tamanho s = length s, fun dobro n = n + n
+in "abc" |> tamanho >> dobro
+```
+
+### <a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ '5 |> fn x . x + x' | url_encode }}">Pipeline com função anônima</a>
+
+O lado direito do pipeline não precisa ser um identificador declarado: também pode ser uma função criada com `fn`. Aqui, a função recebe `5` e retorna `10`.
+
+```text
+5 |> fn x . x + x
+```
+
+### <a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun dobro x = x + x in 2 + 3 |> dobro' | url_encode }}">Precedência entre aritmética e pipeline</a>
+
+As operações aritméticas são agrupadas antes do pipeline. Portanto, a expressão abaixo é interpretada como `(2 + 3) |> dobro`, e não como `2 + (3 |> dobro)`. O resultado é `10`.
+
+```text
+let fun dobro x = x + x in 2 + 3 |> dobro
+```
+
+### <a href="{{ site.baseurl }}/ide/?language=FuncPipe&amp;code={{ 'let fun incrementa x = x + 1, fun decrementa x = x - 1 in 5 |> if false then incrementa else decrementa' | url_encode }}">Escolha condicional da função</a>
+
+Uma expressão `if` pode escolher qual função receberá o valor. Como a condição é falsa, a função escolhida é `decrementa` e o resultado é `4`. Os dois ramos precisam ser compatíveis como funções.
+
+```text
+let fun incrementa x = x + 1, fun decrementa x = x - 1
+in 5 |> if false then incrementa else decrementa
+```
 
 ### Formas inválidas
 - `(2, 3) |> soma` é sintaticamente inválida: a lista de argumentos do pipeline não deve ser envolvida por parênteses.
 - `2, 3 |> incrementa` é sintaticamente válida, mas falha na checagem de tipos porque `incrementa` recebe apenas um argumento.
 - `5 |> 10` também é sintaticamente válida, mas falha na checagem de tipos porque o lado direito do pipeline precisa ser uma função.
+- `let fun ehZero x = x == 0, fun incrementa x = x + 1 in ehZero >> incrementa` falha na checagem de tipos: `ehZero` retorna booleano, mas `incrementa` espera um inteiro.
+- `let fun soma x y = x + y, fun dobro x = x + x in soma >> dobro` falha na checagem de tipos: a implementação da composição aceita somente funções unárias.
 
 
 ## Precedência e Associatividade da Implementação
