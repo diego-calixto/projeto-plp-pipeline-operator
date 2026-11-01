@@ -9,8 +9,8 @@ order: 5
 - Estende a Linguagem Funcional 2 (LF2) com os operadores de *forward pipeline* (`|>`) e composição de funções (`>>`)
 - O operador `|>` estabelece um fluxo de processamento explícito da esquerda para a direita (*left-to-right data flow*), reduzindo o aninhamento excessivo de parênteses em chamadas encadeadas
 - Permite passar um ou múltiplos argumentos posicionais separados por vírgula para a função à direita do pipeline (`x |> f` ou `x, y |> f`)
-- O operador `>>` cria a composição matemática de duas funções (`(f >> g)(x) = g(f(x))`), aplicando primeiro `f` e depois `g`
-- A composição funcional (`>>`) possui precedência gramatical maior que o pipeline (`|>`), de modo que `x |> f >> g` é avaliado como `x |> (f >> g)`
+- O operador `>>` compõe duas funções: aplica primeiro `f` e, em seguida, aplica `g` ao resultado
+- A composição funcional (`>>`) possui precedência gramatical maior que o pipeline (`|>`); assim, em `x |> f >> g`, o pipeline aplica ao valor `x` a composição de `f` com `g`
 - Ambos os operadores possuem associatividade à esquerda
 - Inclui checagem estática de tipos com tratamento e disparo da exceção `TiposIncompativeisException`
 - Preserva a semântica operacional e ambientes de execução (*closures*) da LF2
@@ -26,8 +26,7 @@ Expressao ::= {% include code-link.html path="FuncionalPipeline/src/lfp/plp/expr
 {% include code-indent.html %}| {% include code-link.html path="FuncionalPipeline/src/lfp/plp/functional2/expression/ExpDeclaracao.java" %}\
 {% include code-indent.html %}| {% include code-link.html path="FuncionalPipeline/src/lfp/plp/expressions2/expression/Id.java" %}\
 {% include code-indent.html %}| {% include code-link.html path="FuncionalPipeline/src/lfp/plp/functional2/expression/Aplicacao.java" %}\
-{% include code-indent.html %}| {% include code-link.html path="FuncionalPipeline/src/lfp/plp/functional1/expression/IfThenElse.java" %}\
-{% include code-indent.html %}| "(" {% include code-link.html path="FuncionalPipeline/src/lfp/plp/expressions2/expression/Expressao.java" %} ")"
+{% include code-indent.html %}| {% include code-link.html path="FuncionalPipeline/src/lfp/plp/functional1/expression/IfThenElse.java" %}
 
 Valor ::= {% include code-link.html path="FuncionalPipeline/src/lfp/plp/expressions2/expression/ValorConcreto.java" %}\
 {% include code-indent.html %}| {% include code-link.html path="FuncionalPipeline/src/lfp/plp/functional2/expression/ValorAbstrato.java" %}
